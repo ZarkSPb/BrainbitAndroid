@@ -13,9 +13,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.neuromd.neurosdk.DeviceEnumerator;
@@ -33,17 +33,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    private final int REQUEST_ENABLE_BT = 35;
    private final int REQUEST_PERMISSION_BT = 111;
 
-   private boolean _started = false;
+   private boolean _started;
    private final ReentrantLock _searchLock = new ReentrantLock();
    private DeviceEnumerator _deviceEnum;
    private final List<DeviceInfo> _deviceInfoList = new ArrayList<>();
-   private IDeviceEvent _devEvent;
 
    private BluetoothAdapter _btAdapter;
-   private Button _btOnOff;
-   private Button _btPermission;
+   private Button _btEnableBt;
+   private Button _btRequestPerm;
    private Button _btSearch;
-   private TextView _tvBtStatus;
    private boolean _isBtPermissionGranted = false;
 
 
@@ -58,14 +56,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       BluetoothManager bluetoothManager = getSystemService(BluetoothManager.class);
       _btAdapter = bluetoothManager.getAdapter();
 
-      _btOnOff = findViewById(R.id.btOnOff);
-      _btPermission = findViewById(R.id.btPermission);
+      _btEnableBt = findViewById(R.id.btEnableBt);
+      _btRequestPerm = findViewById(R.id.btRequestPerm);
       _btSearch = findViewById(R.id.btSearch);
-      _tvBtStatus = findViewById(R.id.tvBtStatus);
-      _btOnOff.setOnClickListener(this);
-      _btPermission.setOnClickListener(this);
+      _btEnableBt.setOnClickListener(this);
+      _btRequestPerm.setOnClickListener(this);
       _btSearch.setOnClickListener(this);
-      setBtnOnOffText();
    }
 
    @Override
@@ -73,33 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       super.onActivityResult(requestCode, resultCode, data);
       if (requestCode == REQUEST_ENABLE_BT) {
          if (resultCode == RESULT_OK) {
-            setBtnOnOffText();
          }
-      }
-   }
-
-   @Override
-   public void onClick(View view) {
-      switch (view.getId()) {
-         case R.id.btOnOff:
-            if (!_btAdapter.isEnabled()) {
-               enableBt();
-            } else {
-               _btAdapter.disable();
-               _btOnOff.setText("Turn on bluetooth");
-               _tvBtStatus.setText("Bluetooth adapter is OFF");
-            }
-            break;
-         case R.id.btPermission:
-            getBtPermission();
-            break;
-         case R.id.btSearch:
-            if (_started) {
-               stopSearch();
-            } else {
-               startSearch();
-            }
-            break;
       }
    }
 
@@ -126,37 +96,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       }
    }
 
-   private void setBtnOnOffText() {
-      if (_btAdapter != null) {
-         if (_btAdapter.isEnabled()) {
-            _btOnOff.setText("Turn off bluetooth");
-            _tvBtStatus.setText("Bluetooth adapter is ON");
-         } else {
-            _btOnOff.setText("Turn on bluetooth");
-            _tvBtStatus.setText("Bluetooth adapter is OFF");
-         }
-      }
-   }
-
-   private void setBtnSearchText() {
-      if (_started) {
-         _btSearch.setText("Stop search");
-      } else {
-         _btSearch.setText("Start search");
-      }
-   }
 
    private void enableBt() {
       Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
       startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
    }
 
+   @Override
+   public void onClick(View view) {
+      switch (view.getId()) {
+         case R.id.btEnableBt:
+            enableBt();
+            break;
+         case R.id.btRequestPerm:
+            getBtPermission();
+            break;
+         case R.id.btSearch:
+            if (_started) {
+               stopSearch();
+            } else {
+               startSearch();
+            }
+            break;
+      }
+   }
+
    public void startSearch() {
       if (_searchLock.tryLock()) {
          try {
             if (_started) return;
-            if (_deviceEnum == null)
-               _deviceEnum = new DeviceEnumerator(this, DeviceType.Brainbit);
+            if (_deviceEnum == null) {
+               _deviceEnum = new DeviceEnumerator(this, DeviceType.BrainbitAny);
+            }
             _deviceInfoList.clear();
             _deviceEnum.deviceListChanged.subscribe(new INotificationCallback() {
                @Override
@@ -165,44 +136,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                }
             });
             _started = true;
+            Log.d(LOG_TAG, "Search is started");
+            _btSearch.setText(R.string.btn_stop_search_title);
          } finally {
             _searchLock.unlock();
          }
-         setBtnSearchText();
       }
    }
 
    public void stopSearch() {
-         if (_searchLock.tryLock()) {
-            try {
-               if (!_started)
-                  return;
-               _started = false;
-               if (_deviceEnum != null)
-                  _deviceEnum.deviceListChanged.unsubscribe();
-            } finally {
-               _searchLock.unlock();
-            }
-            invokeSearchState(false);
+      if (_searchLock.tryLock()) {
+         try {
+            if (!_started) return;
+            if (_deviceEnum != null) _deviceEnum.deviceListChanged.unsubscribe();
+
+            _started = false;
+            Log.d(LOG_TAG, "Search is stopped");
+            _btSearch.setText(R.string.btn_start_search_title);
+         } finally {
+            _searchLock.unlock();
          }
-      setBtnSearchText();
-   }
-
-   private void invokeSearchState(boolean searchState) {
-      final IDeviceEvent ev = _devEvent;
-      if(ev != null)
-         ev.searchStateChanged(searchState);
-   }
-
-   private void invokeDeviceListChanged() {
-      final IDeviceEvent ev = _devEvent;
-      if (ev != null) {
-         this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-               ev.deviceListChanged();
-            }
-         });
       }
    }
 
@@ -241,13 +194,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
          }
          if (hasChanged) {
             // fire event
-            invokeDeviceListChanged();
+            Log.d(LOG_TAG, "Device is finding");
          }
       }
-   }
-
-   public interface IDeviceEvent {
-      void searchStateChanged(boolean searchState);
-      void deviceListChanged();
    }
 }

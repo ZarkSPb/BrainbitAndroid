@@ -7,42 +7,34 @@
     tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/btOnOff"
+        android:id="@+id/btEnableBt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Turn on bluetooth"
+        android:layout_marginTop="24dp"
+        android:text="Enable bluetooth"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/tvBtStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Bluetooth off"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btOnOff" />
-
     <Button
-        android:id="@+id/btPermission"
+        android:id="@+id/btRequestPerm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="Get Permission"
+        android:layout_marginTop="24dp"
+        android:text="Permission request"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvBtStatus" />
+        app:layout_constraintTop_toBottomOf="@+id/btEnableBt" />
 
     <Button
         android:id="@+id/btSearch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="Start search"
+        android:layout_marginTop="24dp"
+        android:text="@string/btn_start_search_title"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btPermission" />
+        app:layout_constraintTop_toBottomOf="@+id/btRequestPerm" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

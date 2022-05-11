@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">BrainBit Android</string>
+    <string name="btn_start_search_title">Start search</string>
+    <string name="btn_stop_search_title">Stop search</string>
 </resources>
