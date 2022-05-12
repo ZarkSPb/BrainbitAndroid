@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       _deviceInfoList.clear();
       for (DeviceInfo it : DevHolder.inst().getDeviceInfoList()) {
          HashMap<String, String> map = new HashMap<>();
-         map.put(DEV_NAME_KEY, it.name());
+         map.put(DEV_NAME_KEY, it.name() + ": " +it.serialNumber());
          map.put(DEV_ADDRESS_KEY, it.address());
          _deviceInfoList.add(map);
       }
