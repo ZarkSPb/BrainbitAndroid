@@ -12,26 +12,18 @@ import android.bluetooth.BluetoothManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
-import com.neuromd.neurosdk.DeviceEnumerator;
 import com.neuromd.neurosdk.DeviceInfo;
-import com.neuromd.neurosdk.DeviceType;
-import com.neuromd.neurosdk.INotificationCallback;
+import com.zark.bbandroid.brainbitandroid.utils.DeviceHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -42,9 +34,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    private final int REQUEST_PERMISSION_BT = 111;
 
    private boolean _started;
-   private final ReentrantLock _searchLock = new ReentrantLock();
-   private DeviceEnumerator _deviceEnum;
-   private final List<DeviceInfo> _deviceInfoList = new ArrayList<>();
+//   private final ReentrantLock _searchLock = new ReentrantLock();
+//   private DeviceEnumerator _deviceEnum;
+//   private final List<DeviceInfo> _deviceInfoList = new ArrayList<>();
 
    private BluetoothAdapter _btAdapter;
    private Button btEnableBt;
@@ -53,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    private ListView lvDevices;
 
    private BaseAdapter _lvDevicesAdapter;
-   private final ArrayList<HashMap<String, String>> _deviceViewInfoList = new ArrayList<>();
+   private final ArrayList<HashMap<String, String>> _deviceInfoList = new ArrayList<>();
 
    private boolean _isBtPermissionGranted = false;
 
@@ -66,6 +58,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    }
 
    private void init() {
+      DevHolder.inst().init(this);
+
       BluetoothManager bluetoothManager = getSystemService(BluetoothManager.class);
       _btAdapter = bluetoothManager.getAdapter();
 
@@ -75,8 +69,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       btEnableBt.setOnClickListener(this);
       btRequestPerm.setOnClickListener(this);
       btSearch.setOnClickListener(this);
-
       initDevicesListView();
+
+      DevHolder.inst().setDeviceEvent(new DeviceHelper.IDeviceEvent() {
+         @Override
+         public void deviceListChanged() {
+            updateDevicesListView();
+         }
+      });
+
    }
 
    @Override
@@ -111,7 +112,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       }
    }
 
-
    private void enableBt() {
       Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
       startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
@@ -137,99 +137,103 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    }
 
    public void startSearch() {
-
+      DevHolder.inst().startSearch();
       clearDevicesListView();
+      DevHolder.inst().startSearch();
 
-      if (_searchLock.tryLock()) {
-         try {
-            if (_started) return;
-            if (_deviceEnum == null) {
-               _deviceEnum = new DeviceEnumerator(this, DeviceType.BrainbitAny);
-            }
-            _deviceInfoList.clear();
-            _deviceEnum.deviceListChanged.subscribe(new INotificationCallback() {
-               @Override
-               public void onNotify(Object sender, Object nParam) {
-                  updateDevInfo();
-               }
-            });
-            _started = true;
-            Log.d(LOG_TAG, "Search is started");
-            btSearch.setText(R.string.btn_stop_search_title);
-         } finally {
-            _searchLock.unlock();
-         }
-      }
+
+//      if (_searchLock.tryLock()) {
+//         try {
+//            if (_started) return;
+//            if (_deviceEnum == null) {
+//               _deviceEnum = new DeviceEnumerator(this, DeviceType.BrainbitAny);
+//            }
+//            _deviceInfoList.clear();
+//            _deviceEnum.deviceListChanged.subscribe(new INotificationCallback() {
+//               @Override
+//               public void onNotify(Object sender, Object nParam) {
+//                  updateDevInfo();
+//               }
+//            });
+//            _started = true;
+//            Log.d(LOG_TAG, "Search is started");
+//            btSearch.setText(R.string.btn_stop_search_title);
+//         } finally {
+//            _searchLock.unlock();
+//         }
+//      }
    }
 
    public void stopSearch() {
-      if (_searchLock.tryLock()) {
-         try {
-            if (!_started) return;
-            if (_deviceEnum != null) _deviceEnum.deviceListChanged.unsubscribe();
-
-            _started = false;
-            Log.d(LOG_TAG, "Search is stopped");
-            btSearch.setText(R.string.btn_start_search_title);
-         } finally {
-            _searchLock.unlock();
-         }
-      }
+      DevHolder.inst().stopSearch();
+//      if (_searchLock.tryLock()) {
+//         try {
+//            if (!_started) return;
+//            if (_deviceEnum != null) _deviceEnum.deviceListChanged.unsubscribe();
+//
+//            _started = false;
+//            Log.d(LOG_TAG, "Search is stopped");
+//            btSearch.setText(R.string.btn_start_search_title);
+//         } finally {
+//            _searchLock.unlock();
+//         }
+//      }
    }
 
-   private void updateDevInfo() {
-      if (_searchLock.tryLock()) {
-         boolean hasChanged = false;
-         try {
-            // Checking the change of the device info list
-            // This is a slow solution
-            List<DeviceInfo> deviceInfoList = _deviceEnum.devices();
-            if (deviceInfoList.size() != _deviceInfoList.size()) {
-               hasChanged = true;
-            } else {
-               boolean founded;
-               for (DeviceInfo it : _deviceInfoList) {
-                  founded = false;
-                  for (DeviceInfo itIn : deviceInfoList) {
-                     if (TextUtils.equals(itIn.address(), it.address())) {
-                        founded = true;
-                        break;
-                     }
-                  }
-                  if (!founded) {
-                     hasChanged = true;
-                     break;
-                  }
-               }
-            }
-            if (hasChanged) {
-               _deviceInfoList.clear();
-               if (deviceInfoList.size() > 0)
-                  _deviceInfoList.addAll(deviceInfoList);
-            }
-         } finally {
-            _searchLock.unlock();
-         }
-         if (hasChanged) {
-            // fire event
-            Log.d(LOG_TAG, "Device is finding");
+//   private void updateDevInfo() {
+//      if (_searchLock.tryLock()) {
+//         boolean hasChanged = false;
+//         try {
+//            // Checking the change of the device info list
+//            // This is a slow solution
+//            List<DeviceInfo> deviceInfoList = _deviceEnum.devices();
+//            if (deviceInfoList.size() != _deviceInfoList.size()) {
+//               hasChanged = true;
+//            } else {
+//               boolean founded;
+//               for (DeviceInfo it : _deviceInfoList) {
+//                  founded = false;
+//                  for (DeviceInfo itIn : deviceInfoList) {
+//                     if (TextUtils.equals(itIn.address(), it.address())) {
+//                        founded = true;
+//                        break;
+//                     }
+//                  }
+//                  if (!founded) {
+//                     hasChanged = true;
+//                     break;
+//                  }
+//               }
+//            }
+//            if (hasChanged) {
+//               _deviceInfoList.clear();
+//               if (deviceInfoList.size() > 0)
+//                  _deviceInfoList.addAll(deviceInfoList);
+//            }
+//         } finally {
+//            _searchLock.unlock();
+//         }
+//         if (hasChanged) {
+//            // fire event
+//            Log.d(LOG_TAG, "Device is finding");
+//
+//            runOnUiThread(new Runnable() {
+//               @Override
+//               public void run() {
+//                  updateDevicesListView();
+//               }
+//            });
+//         }
+//      }
+//   }
 
-            this.runOnUiThread(new Runnable() {
-               @Override
-               public void run() {
-                  updateDevicesListView();
-               }
-            });
-         }
-      }
-   }
 
 
 
    private void initDevicesListView() {
       lvDevices = findViewById(R.id.lv_devices);
       _lvDevicesAdapter = new SimpleAdapter(this,
-            _deviceViewInfoList,
+            _deviceInfoList,
             android.R.layout.simple_list_item_2,
             new String[]{DEV_NAME_KEY, DEV_ADDRESS_KEY},
             new int[]{android.R.id.text1, android.R.id.text2});
@@ -237,19 +241,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    }
 
    private void updateDevicesListView() {
-      _deviceViewInfoList.clear();
-      for (DeviceInfo it : _deviceInfoList) {
+      _deviceInfoList.clear();
+      for (DeviceInfo it : DevHolder.inst().getDeviceInfoList()) {
          HashMap<String, String> map = new HashMap<>();
          map.put(DEV_NAME_KEY, it.name());
          map.put(DEV_ADDRESS_KEY, it.address());
-         _deviceViewInfoList.add(map);
+         _deviceInfoList.add(map);
       }
       _lvDevicesAdapter.notifyDataSetInvalidated();
    }
 
    private void clearDevicesListView() {
-      if (!_deviceViewInfoList.isEmpty()) {
-         _deviceViewInfoList.clear();
+      if (!_deviceInfoList.isEmpty()) {
+         _deviceInfoList.clear();
          _lvDevicesAdapter.notifyDataSetInvalidated();
       }
    }
