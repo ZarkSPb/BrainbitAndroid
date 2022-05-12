@@ -42,6 +42,10 @@ final class DevHolder {
       return _deviceHelper.getDeviceInfoList();
    }
 
+   public boolean isSearchStarted() {
+      return _deviceHelper.isSearchStarted();
+   }
+
    public void startSearch() {
       _deviceHelper.startSearch();
    }

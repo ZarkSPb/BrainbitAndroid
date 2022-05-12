@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    private final int REQUEST_ENABLE_BT = 35;
    private final int REQUEST_PERMISSION_BT = 111;
 
-   private boolean _started;
+//   private boolean _started;
 //   private final ReentrantLock _searchLock = new ReentrantLock();
 //   private DeviceEnumerator _deviceEnum;
 //   private final List<DeviceInfo> _deviceInfoList = new ArrayList<>();
@@ -72,6 +72,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       initDevicesListView();
 
       DevHolder.inst().setDeviceEvent(new DeviceHelper.IDeviceEvent() {
+         @Override
+         public void searchStateChanged(final boolean searchState) {
+            btSearch.post(new Runnable() {
+               @Override
+               public void run() {
+                  btSearch.setText(searchState ? R.string.btn_stop_search_title :
+                        R.string.btn_start_search_title);
+               }
+            });
+         }
+
          @Override
          public void deviceListChanged() {
             updateDevicesListView();
@@ -127,7 +138,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             getBtPermission();
             break;
          case R.id.btSearch:
-            if (_started) {
+//            if (_started) {
+            if (DevHolder.inst().isSearchStarted()) {
                stopSearch();
             } else {
                startSearch();

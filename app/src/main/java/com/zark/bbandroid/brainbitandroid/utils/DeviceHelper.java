@@ -30,6 +30,11 @@ public class DeviceHelper {
       _devType = devType;
    }
 
+   private void invokeSearchState(boolean searchState) {
+      final IDeviceEvent ev = _devEvent;
+      if (ev != null)
+         ev.searchStateChanged(searchState);
+   }
 
    private void invokeDeviceListChanged() {
       final IDeviceEvent ev = _devEvent;
@@ -102,8 +107,9 @@ public class DeviceHelper {
          } finally {
             _searchLock.unlock();
          }
-         // write end
-      }
+         invokeSearchState(true);
+      } else
+         invokeSearchState(isSearchStarted());
    }
 
    public void stopSearch() {
@@ -115,7 +121,22 @@ public class DeviceHelper {
          } finally {
             _searchLock.unlock();
          }
-         // write end
+         invokeSearchState(false);
+      }
+   }
+
+   public boolean isSearchStarted() {
+      try {
+         if (_searchLock.tryLock(100, TimeUnit.MILLISECONDS)) {
+            try {
+               return _started;
+            } finally {
+               _searchLock.unlock();
+            }
+         }
+         return false;
+      } catch (InterruptedException e) {
+         return false;
       }
    }
 
@@ -140,7 +161,7 @@ public class DeviceHelper {
 
 
    public interface IDeviceEvent {
-//      void searchStateChanged(boolean searchState);
+      void searchStateChanged(boolean searchState);
 
       void deviceListChanged();
    }
