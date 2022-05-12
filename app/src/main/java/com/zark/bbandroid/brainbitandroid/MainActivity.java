@@ -15,7 +15,11 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import com.neuromd.neurosdk.DeviceEnumerator;
@@ -24,12 +28,16 @@ import com.neuromd.neurosdk.DeviceType;
 import com.neuromd.neurosdk.INotificationCallback;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
    private final String LOG_TAG = "mylog";
+   private final String DEV_NAME_KEY = "name";
+   private final String DEV_ADDRESS_KEY = "address";
    private final int REQUEST_ENABLE_BT = 35;
    private final int REQUEST_PERMISSION_BT = 111;
 
@@ -39,9 +47,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    private final List<DeviceInfo> _deviceInfoList = new ArrayList<>();
 
    private BluetoothAdapter _btAdapter;
-   private Button _btEnableBt;
-   private Button _btRequestPerm;
-   private Button _btSearch;
+   private Button btEnableBt;
+   private Button btRequestPerm;
+   private Button btSearch;
+   private ListView lvDevices;
+
+   private BaseAdapter _lvDevicesAdapter;
+   private final ArrayList<HashMap<String, String>> _deviceViewInfoList = new ArrayList<>();
+
    private boolean _isBtPermissionGranted = false;
 
 
@@ -56,12 +69,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       BluetoothManager bluetoothManager = getSystemService(BluetoothManager.class);
       _btAdapter = bluetoothManager.getAdapter();
 
-      _btEnableBt = findViewById(R.id.btEnableBt);
-      _btRequestPerm = findViewById(R.id.btRequestPerm);
-      _btSearch = findViewById(R.id.btSearch);
-      _btEnableBt.setOnClickListener(this);
-      _btRequestPerm.setOnClickListener(this);
-      _btSearch.setOnClickListener(this);
+      btEnableBt = findViewById(R.id.btEnableBt);
+      btRequestPerm = findViewById(R.id.btRequestPerm);
+      btSearch = findViewById(R.id.btSearch);
+      btEnableBt.setOnClickListener(this);
+      btRequestPerm.setOnClickListener(this);
+      btSearch.setOnClickListener(this);
+
+      initDevicesListView();
    }
 
    @Override
@@ -122,6 +137,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    }
 
    public void startSearch() {
+
+      clearDevicesListView();
+
       if (_searchLock.tryLock()) {
          try {
             if (_started) return;
@@ -137,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             });
             _started = true;
             Log.d(LOG_TAG, "Search is started");
-            _btSearch.setText(R.string.btn_stop_search_title);
+            btSearch.setText(R.string.btn_stop_search_title);
          } finally {
             _searchLock.unlock();
          }
@@ -152,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             _started = false;
             Log.d(LOG_TAG, "Search is stopped");
-            _btSearch.setText(R.string.btn_start_search_title);
+            btSearch.setText(R.string.btn_start_search_title);
          } finally {
             _searchLock.unlock();
          }
@@ -195,7 +213,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
          if (hasChanged) {
             // fire event
             Log.d(LOG_TAG, "Device is finding");
+
+            this.runOnUiThread(new Runnable() {
+               @Override
+               public void run() {
+                  updateDevicesListView();
+               }
+            });
          }
+      }
+   }
+
+
+
+   private void initDevicesListView() {
+      lvDevices = findViewById(R.id.lv_devices);
+      _lvDevicesAdapter = new SimpleAdapter(this,
+            _deviceViewInfoList,
+            android.R.layout.simple_list_item_2,
+            new String[]{DEV_NAME_KEY, DEV_ADDRESS_KEY},
+            new int[]{android.R.id.text1, android.R.id.text2});
+      lvDevices.setAdapter(_lvDevicesAdapter);
+   }
+
+   private void updateDevicesListView() {
+      _deviceViewInfoList.clear();
+      for (DeviceInfo it : _deviceInfoList) {
+         HashMap<String, String> map = new HashMap<>();
+         map.put(DEV_NAME_KEY, it.name());
+         map.put(DEV_ADDRESS_KEY, it.address());
+         _deviceViewInfoList.add(map);
+      }
+      _lvDevicesAdapter.notifyDataSetInvalidated();
+   }
+
+   private void clearDevicesListView() {
+      if (!_deviceViewInfoList.isEmpty()) {
+         _deviceViewInfoList.clear();
+         _lvDevicesAdapter.notifyDataSetInvalidated();
       }
    }
 }
