@@ -2,4 +2,7 @@
     <string name="app_name">BrainBit Android</string>
     <string name="btn_start_search_title">Start search</string>
     <string name="btn_stop_search_title">Stop search</string>
+
+    <string name="device_search_connected">Device connection success</string>
+    <string name="device_search_connection_failed">Device connection failed</string>
 </resources>
