@@ -12,7 +12,9 @@ import android.bluetooth.BluetoothManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -20,14 +22,18 @@ import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import com.neuromd.neurosdk.DeviceInfo;
+import com.zark.bbandroid.brainbitandroid.utils.CommonHelper;
 import com.zark.bbandroid.brainbitandroid.utils.DeviceHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-   private final String LOG_TAG = "mylog";
+   private final String TAG = "[MainActivity]";
    private final String DEV_NAME_KEY = "name";
    private final String DEV_ADDRESS_KEY = "address";
    private final int REQUEST_ENABLE_BT = 35;
@@ -41,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
    private BaseAdapter _lvDevicesAdapter;
    private final ArrayList<HashMap<String, String>> _deviceInfoList = new ArrayList<>();
+
+   private final ExecutorService _es = Executors.newFixedThreadPool(1);
 
    private boolean _isBtPermissionGranted = false;
 
@@ -69,13 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       DevHolder.inst().setDeviceEvent(new DeviceHelper.IDeviceEvent() {
          @Override
          public void searchStateChanged(final boolean searchState) {
-            btSearch.post(new Runnable() {
-               @Override
-               public void run() {
-                  btSearch.setText(searchState ? R.string.btn_stop_search_title :
-                        R.string.btn_start_search_title);
-               }
-            });
+            btSearch.post(() -> btSearch.setText(searchState ? R.string.btn_stop_search_title : R.string.btn_start_search_title));
          }
 
          @Override
@@ -91,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       super.onActivityResult(requestCode, resultCode, data);
       if (requestCode == REQUEST_ENABLE_BT) {
          if (resultCode == RESULT_OK) {
+            // do it
          }
       }
    }
@@ -143,16 +146,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       }
    }
 
-   public void startSearch() {
-      DevHolder.inst().startSearch();
-      clearDevicesListView();
-      DevHolder.inst().startSearch();
-   }
-
-   public void stopSearch() {
-      DevHolder.inst().stopSearch();
-   }
-
    private void initDevicesListView() {
       lvDevices = findViewById(R.id.lv_devices);
       _lvDevicesAdapter = new SimpleAdapter(this,
@@ -161,13 +154,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             new String[]{DEV_NAME_KEY, DEV_ADDRESS_KEY},
             new int[]{android.R.id.text1, android.R.id.text2});
       lvDevices.setAdapter(_lvDevicesAdapter);
+      lvDevices.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+         @Override
+         public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+            Map<String, String> item = (Map<String, String>) _lvDevicesAdapter.getItem(position);
+            if (item != null) {
+               stopSearch();
+               connectToDevice(item.get(DEV_ADDRESS_KEY));
+            }
+         }
+      });
    }
 
    private void updateDevicesListView() {
       _deviceInfoList.clear();
       for (DeviceInfo it : DevHolder.inst().getDeviceInfoList()) {
          HashMap<String, String> map = new HashMap<>();
-         map.put(DEV_NAME_KEY, it.name() + ": " +it.serialNumber());
+         map.put(DEV_NAME_KEY, it.name() + ": " + it.serialNumber());
          map.put(DEV_ADDRESS_KEY, it.address());
          _deviceInfoList.add(map);
       }
@@ -179,5 +182,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
          _deviceInfoList.clear();
          _lvDevicesAdapter.notifyDataSetInvalidated();
       }
+   }
+
+   public void startSearch() {
+      DevHolder.inst().disconnected();
+      DevHolder.inst().startSearch();
+      clearDevicesListView();
+      // enabled Sensor
+      DevHolder.inst().startSearch();
+   }
+
+   public void stopSearch() {
+      DevHolder.inst().stopSearch();
+   }
+
+
+   private void connectToDevice(final String address) {
+      _es.execute(() -> {
+         try {
+            DevHolder.inst().connect(address);
+            CommonHelper.showMessage(MainActivity.this, R.string.device_search_connected);
+         } catch (Exception ex) {
+            Log.d(TAG, "Failed connect to device", ex);
+            CommonHelper.showMessage(MainActivity.this, R.string.device_search_connection_failed);
+         }
+      });
    }
 }

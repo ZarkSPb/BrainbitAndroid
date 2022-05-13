@@ -1,10 +1,10 @@
 package com.zark.bbandroid.brainbitandroid.utils;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.neuromd.neurosdk.Device;
 import com.neuromd.neurosdk.DeviceEnumerator;
 import com.neuromd.neurosdk.DeviceInfo;
 import com.neuromd.neurosdk.DeviceType;
@@ -115,9 +115,11 @@ public class DeviceHelper {
    public void stopSearch() {
       if (_searchLock.tryLock()) {
          try {
-            if (!_started) return;
+            if (!_started)
+               return;
             _started = false;
-            if (_deviceEnum != null) _deviceEnum.deviceListChanged.unsubscribe();
+            if (_deviceEnum != null)
+               _deviceEnum.deviceListChanged.unsubscribe();
          } finally {
             _searchLock.unlock();
          }
@@ -159,6 +161,41 @@ public class DeviceHelper {
       }
    }
 
+
+   public Device createDevice(DeviceInfo deviceInfo) {
+      if (deviceInfo == null || TextUtils.isEmpty(deviceInfo.address()))
+         return null;
+      try {
+         if (_searchLock.tryLock(100, TimeUnit.MILLISECONDS)) {
+            try {
+               if(_deviceEnum == null)
+                  _deviceEnum = new DeviceEnumerator(_context, _devType);
+               if (deviceInfo.name().toLowerCase().contains("black")) {
+                  // black support
+               } else {
+                  return _deviceEnum.createDevice(deviceInfo);
+               }
+            } finally {
+               _searchLock.unlock();
+            }
+         }
+         return null;
+      } catch (InterruptedException e) {
+         return null;
+      }
+   }
+
+   public Device createDevice(String address) {
+      if (!TextUtils.isEmpty(address)) {
+         List<DeviceInfo> devLst = getDeviceInfoList();
+         for (DeviceInfo it : devLst) {
+            if (TextUtils.equals(it.address(), address)) {
+               return createDevice(it);
+            }
+         }
+      }
+      return null;
+   }
 
    public interface IDeviceEvent {
       void searchStateChanged(boolean searchState);
