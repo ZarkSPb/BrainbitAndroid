@@ -3,6 +3,14 @@
     <string name="btn_start_search_title">Start search</string>
     <string name="btn_stop_search_title">Stop search</string>
 
+    <string name="dev_state_title">State:</string>
+    <string name="dev_power_title">Power:</string>
+
+    <string name="dev_state_connected">Connected</string>
+    <string name="dev_state_disconnected">Disconnected</string>
+    <string name="dev_power_empty">-</string>
+    <string name="dev_power_prc">%1$d %%</string>
+
     <string name="device_search_connected">Device connection success</string>
     <string name="device_search_connection_failed">Device connection failed</string>
 </resources>
