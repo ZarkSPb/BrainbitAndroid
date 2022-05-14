@@ -1,4 +1,4 @@
-package com.zark.bbandroid.brainbitandroid.utils;
+package com.zark.bbandroid.utils;
 
 import android.text.TextUtils;
 import android.widget.Toast;

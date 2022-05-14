@@ -1,16 +1,7 @@
 package com.zark.bbandroid.brainbitandroid;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
-import android.Manifest;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothManager;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -20,11 +11,11 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.neuromd.neurosdk.DeviceInfo;
-import com.zark.bbandroid.brainbitandroid.utils.CommonHelper;
-import com.zark.bbandroid.brainbitandroid.utils.DeviceHelper;
+import com.zark.bbandroid.utils.CommonHelper;
+import com.zark.bbandroid.utils.DeviceHelper;
+import com.zark.bbandroid.utils.SensorHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,15 +23,12 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity {
 
    private final String TAG = "[MainActivity]";
    private final String DEV_NAME_KEY = "name";
    private final String DEV_ADDRESS_KEY = "address";
-   private final int REQUEST_ENABLE_BT = 35;
-   private final int REQUEST_PERMISSION_BT = 111;
 
-   private Button btEnableBt;
    private Button btSearch;
    private ListView lvDevices;
 
@@ -52,8 +40,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
    private final ExecutorService _es = Executors.newFixedThreadPool(1);
 
-   private boolean _isBtPermissionGranted = false;
-
    @Override
    protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
@@ -64,7 +50,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    private void init() {
       tvDevState = findViewById(R.id.txt_dev_state);
       tvDevBatteryPower = findViewById(R.id.txt_dev_battery_power);
-
       DevHolder.inst().init(this);
       DevHolder.inst().addCallback(new DevHolder.IDeviceHolderCallback() {
          @Override
@@ -78,20 +63,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                tvDevState.setText(R.string.dev_state_connected);
             } else {
                tvDevState.setText(R.string.dev_state_disconnected);
-               tvDevBatteryPower.setText("-");
+               tvDevBatteryPower.setText(R.string.dev_power_empty);
             }
          }
       });
 
-      BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
-      BluetoothAdapter _btAdapter = bluetoothManager.getAdapter();
-
-      btEnableBt = findViewById(R.id.bt_enable_bt);
       btSearch = findViewById(R.id.bt_search);
-      btEnableBt.setOnClickListener(this);
-      btSearch.setOnClickListener(this);
+      btSearch.setOnClickListener(new View.OnClickListener() {
+         @Override
+         public void onClick(View v) {
+            if (DevHolder.inst().isSearchStarted()) {
+               stopSearch();
+            } else {
+               startSearch();
+            }
+         }
+      });
       initDevicesListView();
-
       DevHolder.inst().setDeviceEvent(new DeviceHelper.IDeviceEvent() {
          @Override
          public void searchStateChanged(final boolean searchState) {
@@ -103,63 +91,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             updateDevicesListView();
          }
       });
-
-   }
-
-   @Override
-   protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-      super.onActivityResult(requestCode, resultCode, data);
-      if (requestCode == REQUEST_ENABLE_BT) {
-         if (resultCode == RESULT_OK) {
-            // do it
-         }
-      }
-   }
-
-   @Override
-   public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-      if (requestCode == REQUEST_PERMISSION_BT) {
-         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            _isBtPermissionGranted = true;
-         } else {
-            Toast.makeText(this, "No permission", Toast.LENGTH_SHORT).show();
-         }
-      } else {
-         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-      }
-   }
-
-   private void getBtPermission() {
-      if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED) {
-         ActivityCompat.requestPermissions(this,
-               new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_PERMISSION_BT);
-      } else {
-         _isBtPermissionGranted = true;
-      }
-   }
-
-   private void enableBt() {
-      getBtPermission();
-
-      Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-      startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-   }
-
-   @Override
-   public void onClick(View view) {
-      switch (view.getId()) {
-         case R.id.bt_enable_bt:
-            enableBt();
-            break;
-         case R.id.bt_search:
-            if (DevHolder.inst().isSearchStarted()) {
-               stopSearch();
-            } else {
-               startSearch();
-            }
-            break;
-      }
    }
 
    private void initDevicesListView() {
@@ -172,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       lvDevices.setAdapter(_lvDevicesAdapter);
       lvDevices.setOnItemClickListener(new AdapterView.OnItemClickListener() {
          @Override
+         @SuppressWarnings("unchecked")
          public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
             Map<String, String> item = (Map<String, String>) _lvDevicesAdapter.getItem(position);
             if (item != null) {
@@ -200,11 +132,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       }
    }
 
-   public void startSearch() {
-      DevHolder.inst().disconnected();
+   private void startSearch() {
+      DevHolder.inst().disconnect();
       clearDevicesListView();
-      // enabled Sensor
-      DevHolder.inst().startSearch();
+      DevHolder.inst().enabledSensor(new SensorHelper.ISensorEvent() {
+         @Override
+         public void ready() {
+            DevHolder.inst().startSearch();
+         }
+
+         @Override
+         public void cancel(String message, Exception error) {
+            CommonHelper.showMessage(MainActivity.this, message);
+         }
+      });
    }
 
    public void stopSearch() {
