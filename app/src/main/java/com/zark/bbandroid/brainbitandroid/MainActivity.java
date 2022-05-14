@@ -19,6 +19,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.neuromd.neurosdk.DeviceInfo;
@@ -45,6 +46,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    private Button btSearch;
    private ListView lvDevices;
 
+   private TextView tvDevState;
+   private TextView tvDevBatteryPower;
+
    private BaseAdapter _lvDevicesAdapter;
    private final ArrayList<HashMap<String, String>> _deviceInfoList = new ArrayList<>();
 
@@ -61,14 +65,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    }
 
    private void init() {
+      tvDevState = findViewById(R.id.txt_dev_state);
+      tvDevBatteryPower = findViewById(R.id.txt_dev_battery_power);
+
       DevHolder.inst().init(this);
+      DevHolder.inst().addCallback(new DevHolder.IDeviceHolderCallback() {
+         @Override
+         public void batteryChanged(int val) {
+            tvDevBatteryPower.setText(getString(R.string.dev_power_prc, val));
+         }
+
+         @Override
+         public void deviceState(boolean state) {
+            if (state) {
+               tvDevState.setText(R.string.dev_state_connected);
+            } else {
+               tvDevState.setText(R.string.dev_state_disconnected);
+               tvDevBatteryPower.setText("-");
+            }
+         }
+      });
 
       BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
       _btAdapter = bluetoothManager.getAdapter();
 
-      btEnableBt = findViewById(R.id.btEnableBt);
-      btRequestPerm = findViewById(R.id.btRequestPerm);
-      btSearch = findViewById(R.id.btSearch);
+      btEnableBt = findViewById(R.id.bt_enable_bt);
+      btRequestPerm = findViewById(R.id.bt_request_perm);
+      btSearch = findViewById(R.id.bt_search);
       btEnableBt.setOnClickListener(this);
       btRequestPerm.setOnClickListener(this);
       btSearch.setOnClickListener(this);
@@ -129,13 +152,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    @Override
    public void onClick(View view) {
       switch (view.getId()) {
-         case R.id.btEnableBt:
+         case R.id.bt_enable_bt:
             enableBt();
             break;
-         case R.id.btRequestPerm:
+         case R.id.bt_request_perm:
             getBtPermission();
             break;
-         case R.id.btSearch:
+         case R.id.bt_search:
 //            if (_started) {
             if (DevHolder.inst().isSearchStarted()) {
                stopSearch();

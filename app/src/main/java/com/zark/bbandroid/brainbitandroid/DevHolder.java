@@ -5,6 +5,7 @@ import android.util.Pair;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.neuromd.neurosdk.BatteryChannel;
 import com.neuromd.neurosdk.Command;
 import com.neuromd.neurosdk.Device;
 import com.neuromd.neurosdk.DeviceInfo;
@@ -23,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 final class DevHolder {
+   private final static String TAG = "[DevHolder]";
    private final static Object _mutex = new Object();
    private static volatile DevHolder _inst;
 
@@ -32,9 +34,10 @@ final class DevHolder {
    private final ReentrantLock _deviceLock = new ReentrantLock();
    private Pair<String, Device> _device;
 
+   private BatteryChannel _batteryChannel;
+
    private final List<IDeviceHolderCallback> _callbacks = Collections.synchronizedList(new ArrayList<IDeviceHolderCallback>());
    private final AtomicBoolean _connectionState = new AtomicBoolean();
-
 
    public static DevHolder inst() {
       DevHolder instRef = _inst;
@@ -76,12 +79,17 @@ final class DevHolder {
       _deviceHelper.stopSearch();
    }
 
-   private void freeDevice() throws InterruptedException {
-      if (_device != null) {
-         _device.second.parameterChanged.unsubscribe();
-         _device.second.disconnect();
-         _device.second.close();
-         _device = null;
+   private void invokeBatteryStateChanged(final int val) {
+      AppCompatActivity ctx = _wCtx.get();
+      if (ctx != null) {
+         ctx.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+               for (IDeviceHolderCallback cb : _callbacks) {
+                  cb.batteryChanged(val);
+               }
+            }
+         });
       }
    }
 
@@ -93,6 +101,23 @@ final class DevHolder {
             public void run() {
                for (IDeviceHolderCallback cb : _callbacks) {
                   cb.deviceState(val);
+               }
+            }
+         });
+      }
+   }
+
+   private void initBatteryChannel(Device device) {
+      if (_batteryChannel == null) {
+         _batteryChannel = new BatteryChannel(device);
+         _batteryChannel.dataLengthChanged.subscribe(new INotificationCallback<Integer>() {
+            @Override
+            public void onNotify(Object sender, Integer nParam) {
+               BatteryChannel bCh = _batteryChannel;
+               if (bCh != null) {
+                  int[] batVal = bCh.readData(bCh.totalLength() - 1, 1);
+                  if (batVal != null && batVal.length > 0)
+                     invokeBatteryStateChanged(batVal[0]);
                }
             }
          });
@@ -117,17 +142,21 @@ final class DevHolder {
       }
    }
 
-   public void disconnected() {
-      try {
-         if (_deviceLock.tryLock(100, TimeUnit.MILLISECONDS))
-            try {
-               freeDevice();
-            } finally {
-               _deviceLock.unlock();
-            }
-      } catch (Exception exception) {
-         // skip
+   private void freeBatteryChannel() {
+      if (_batteryChannel != null) {
+         _batteryChannel.dataLengthChanged.unsubscribe();
+         _batteryChannel = null;
       }
+   }
+
+   private void freeDevice() throws InterruptedException {
+      if (_device != null) {
+         _device.second.parameterChanged.unsubscribe();
+         _device.second.disconnect();
+         _device.second.close();
+         _device = null;
+      }
+      freeBatteryChannel();
    }
 
    private Device connect(Device device) throws Exception {
@@ -140,7 +169,7 @@ final class DevHolder {
             device.close();
             throw ex;
          }
-//         initBatteryChannel(device);
+         initBatteryChannel(device);
       } else {
          device.execute(Command.FindMe);
       }
@@ -166,6 +195,20 @@ final class DevHolder {
       }
    }
 
+   public void disconnected() {
+      try {
+         if (_deviceLock.tryLock(100, TimeUnit.MILLISECONDS))
+            try {
+               freeDevice();
+            } finally {
+               _deviceLock.unlock();
+               invokeDevStateChanged(false);
+            }
+      } catch (Exception exception) {
+         // skip
+      }
+   }
+
    public Device device() {
       try {
          if (_deviceLock.tryLock(100, TimeUnit.MILLISECONDS)) {
@@ -181,7 +224,16 @@ final class DevHolder {
       return null;
    }
 
+   public void addCallback(IDeviceHolderCallback callback) {
+      if (callback == null)
+         return;
+      if (!_callbacks.contains(callback))
+            _callbacks.add(callback);
+   }
+
    public interface IDeviceHolderCallback {
+      void batteryChanged(int val);
+
       void deviceState(boolean state);
    }
 
