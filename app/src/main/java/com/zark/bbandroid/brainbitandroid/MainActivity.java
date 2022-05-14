@@ -40,9 +40,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    private final int REQUEST_ENABLE_BT = 35;
    private final int REQUEST_PERMISSION_BT = 111;
 
-   private BluetoothAdapter _btAdapter;
    private Button btEnableBt;
-   private Button btRequestPerm;
    private Button btSearch;
    private ListView lvDevices;
 
@@ -55,7 +53,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    private final ExecutorService _es = Executors.newFixedThreadPool(1);
 
    private boolean _isBtPermissionGranted = false;
-
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
@@ -87,13 +84,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       });
 
       BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
-      _btAdapter = bluetoothManager.getAdapter();
+      BluetoothAdapter _btAdapter = bluetoothManager.getAdapter();
 
       btEnableBt = findViewById(R.id.bt_enable_bt);
-      btRequestPerm = findViewById(R.id.bt_request_perm);
       btSearch = findViewById(R.id.bt_search);
       btEnableBt.setOnClickListener(this);
-      btRequestPerm.setOnClickListener(this);
       btSearch.setOnClickListener(this);
       initDevicesListView();
 
@@ -145,6 +140,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    }
 
    private void enableBt() {
+      getBtPermission();
+
       Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
       startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
    }
@@ -155,11 +152,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
          case R.id.bt_enable_bt:
             enableBt();
             break;
-         case R.id.bt_request_perm:
-            getBtPermission();
-            break;
          case R.id.bt_search:
-//            if (_started) {
             if (DevHolder.inst().isSearchStarted()) {
                stopSearch();
             } else {
@@ -209,7 +202,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
    public void startSearch() {
       DevHolder.inst().disconnected();
-      DevHolder.inst().startSearch();
       clearDevicesListView();
       // enabled Sensor
       DevHolder.inst().startSearch();
