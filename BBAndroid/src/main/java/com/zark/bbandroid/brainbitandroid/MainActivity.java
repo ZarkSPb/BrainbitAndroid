@@ -23,13 +23,14 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
    private final String TAG = "[MainActivity]";
    private final String DEV_NAME_KEY = "name";
    private final String DEV_ADDRESS_KEY = "address";
 
    private Button btSearch;
+   private Button btResistance;
    private ListView lvDevices;
 
    private TextView tvDevState;
@@ -69,16 +70,10 @@ public class MainActivity extends AppCompatActivity {
       });
 
       btSearch = findViewById(R.id.bt_search);
-      btSearch.setOnClickListener(new View.OnClickListener() {
-         @Override
-         public void onClick(View v) {
-            if (DevHolder.inst().isSearchStarted()) {
-               stopSearch();
-            } else {
-               startSearch();
-            }
-         }
-      });
+      btSearch.setOnClickListener(this);
+      btResistance = findViewById(R.id.bt_resistance);
+      btResistance.setOnClickListener(this);
+
       initDevicesListView();
       DevHolder.inst().setDeviceEvent(new DeviceHelper.IDeviceEvent() {
          @Override
@@ -164,4 +159,26 @@ public class MainActivity extends AppCompatActivity {
          }
       });
    }
+
+   @Override
+   public void onClick(View view) {
+      switch (view.getId()) {
+         case R.id.bt_search:
+            if (DevHolder.inst().isSearchStarted()) {
+               stopSearch();
+            } else {
+               startSearch();
+            }
+            break;
+         case R.id.bt_resistance:
+            startResistance();
+            break;
+      }
+   }
+
+   private void startResistance() {
+      Resistance.inst().init(this);
+      Resistance.inst().resistanceStart();
+   }
+
 }
