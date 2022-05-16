@@ -10,6 +10,8 @@ import com.neuromd.neurosdk.ChannelInfo;
 import com.neuromd.neurosdk.ChannelType;
 import com.neuromd.neurosdk.Command;
 import com.neuromd.neurosdk.Device;
+import com.neuromd.neurosdk.DeviceState;
+import com.neuromd.neurosdk.ParameterName;
 import com.neuromd.neurosdk.SignalChannel;
 import com.neuromd.neurosdk.SourceChannel;
 import com.zark.bbandroid.utils.CommonHelper;
@@ -61,7 +63,7 @@ final class Signal {
             ChannelInfo channelInfoO2 = DevHolder.inst().getDevChannel(SourceChannel.O2.name(), ChannelType.Signal);
             ChannelInfo channelInfoT3 = DevHolder.inst().getDevChannel(SourceChannel.T3.name(), ChannelType.Signal);
             ChannelInfo channelInfoT4 = DevHolder.inst().getDevChannel(SourceChannel.T4.name(), ChannelType.Signal);
-            if (channelInfoO1 != null) {
+            if (channelInfoO1 != null && channelInfoO2 != null && channelInfoT3 != null && channelInfoT4 != null) {
                configureDevice(device);
                plotO1.startRender(new SignalChannel(device, channelInfoO1), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
                plotO2.startRender(new SignalChannel(device, channelInfoO2), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
@@ -77,5 +79,32 @@ final class Signal {
 
    private void configureDevice(Device device) {
       device.execute(Command.StartSignal);
+   }
+
+
+   public void stopProcess() {
+      if (plotO1 != null) {
+         plotO1.stopRender();
+      }
+      if (plotO2 != null) {
+         plotO2.stopRender();
+      }
+      if (plotT3 != null) {
+         plotT3.stopRender();
+      }
+      if (plotT4 != null) {
+         plotT4.stopRender();
+      }
+      try {
+         Device device = DevHolder.inst().device();
+         if (device != null) {
+            if (device.readParam(ParameterName.State) == DeviceState.Connected) {
+               device.execute(Command.StopSignal);
+            }
+         }
+      } catch (Exception ex) {
+         Log.d(TAG, "Failed stop signal", ex);
+         CommonHelper.showMessage(_activity, R.string.err_stop_signal);
+      }
    }
 }

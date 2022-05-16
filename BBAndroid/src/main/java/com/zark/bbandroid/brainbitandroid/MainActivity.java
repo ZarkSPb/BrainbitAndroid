@@ -42,6 +42,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
    private final ExecutorService _es = Executors.newFixedThreadPool(1);
 
+//   private Boolean _resistance;
+//   private Boolean _signal = false;
+
    @Override
    protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
@@ -63,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
          public void deviceState(boolean state) {
             if (state) {
                tvDevState.setText(R.string.dev_state_connected);
+               clearDevicesListView();
             } else {
                tvDevState.setText(R.string.dev_state_disconnected);
                tvDevBatteryPower.setText(R.string.dev_power_empty);
@@ -177,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             startResistance();
             break;
          case R.id.bt_signal:
-            startSignal();
+               startSignal();
             break;
       }
    }
