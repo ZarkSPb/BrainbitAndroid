@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
    private Button btSearch;
    private Button btResistance;
+   private Button btSignal;
    private ListView lvDevices;
 
    private TextView tvDevState;
@@ -73,6 +74,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       btSearch.setOnClickListener(this);
       btResistance = findViewById(R.id.bt_resistance);
       btResistance.setOnClickListener(this);
+      btSignal = findViewById(R.id.bt_signal);
+      btSignal.setOnClickListener(this);
 
       initDevicesListView();
       DevHolder.inst().setDeviceEvent(new DeviceHelper.IDeviceEvent() {
@@ -173,12 +176,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
          case R.id.bt_resistance:
             startResistance();
             break;
+         case R.id.bt_signal:
+            startSignal();
+            break;
       }
    }
 
    private void startResistance() {
       Resistance.inst().init(this);
       Resistance.inst().resistanceStart();
+   }
+
+   private void startSignal() {
+      Signal.inst().init(this);
+      Signal.inst().signalStart();
    }
 
 }

@@ -1,163 +1,204 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_weight="1"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/bt_search"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="@string/btn_start_search_title"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/bt_resistance"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="16dp"
-        android:text="@string/resistance_demo_mode_title"
-        app:layout_constraintStart_toEndOf="@+id/bt_search"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ListView
-        android:id="@+id/lv_devices"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        app:layout_constraintTop_toBottomOf="@+id/bt_search"
-        tools:layout_editor_absoluteX="10dp" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="1dp">
 
-    <TextView
-        android:id="@+id/txt_o1_title"
-        android:layout_width="40dp"
-        android:layout_height="19dp"
-        android:layout_margin="10dp"
-        android:layout_marginStart="16dp"
-        android:text="@string/el_resistance_o1_title"
-        app:layout_constraintBottom_toTopOf="@+id/txt_o2_title"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/txt_o1_value"
-        android:layout_width="wrap_content"
-        android:layout_height="19dp"
-        android:layout_margin="10dp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/txt_o2_title"
-        app:layout_constraintStart_toEndOf="@id/txt_o1_title" />
-
-    <TextView
-        android:id="@+id/txt_o2_title"
-        android:layout_width="40dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:text="@string/el_resistance_o2_title"
-        app:layout_constraintBottom_toTopOf="@+id/txt_t3_title"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/txt_o2_value"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/txt_t3_title"
-        app:layout_constraintStart_toEndOf="@id/txt_o2_title" />
-
-    <TextView
-        android:id="@+id/txt_t3_title"
-        android:layout_width="40dp"
-        android:layout_height="19dp"
-        android:layout_margin="10dp"
-        android:text="@string/el_resistance_t3_title"
-        app:layout_constraintBottom_toTopOf="@+id/txt_t4_title"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/txt_t3_value"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/txt_t4_title"
-        app:layout_constraintStart_toEndOf="@id/txt_t3_title" />
-
-    <TextView
-        android:id="@+id/txt_t4_title"
-        android:layout_width="40dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:layout_marginBottom="16dp"
-        android:text="@string/el_resistance_t4_title"
-        app:layout_constraintBottom_toTopOf="@+id/clDeviceState"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/txt_t4_value"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toEndOf="@id/txt_t4_title"
-        app:layout_constraintTop_toBottomOf="@+id/txt_t3_title" />
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/clDeviceState"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/colorDevState"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <TextView
-            android:id="@+id/txt_dev_state_title"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            style="borderless"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="6dp"
-            android:text="@string/dev_state_title"
-            android:textColor="@color/colorDevStateTitle"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/txt_dev_state"
-            android:layout_width="wrap_content"
+            <Button
+                android:id="@+id/bt_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:text="@string/btn_start_search_title"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/bt_resistance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:text="@string/resistance_demo_mode_title"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/bt_signal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:text="Signal"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <ListView
+            android:id="@+id/lv_devices"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="6dp"
-            android:text="@string/dev_state_disconnected"
-            android:textColor="@color/colorDevStateValue"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@id/txt_dev_state_title" />
+            android:layout_margin="10dp">
 
-        <TextView
-            android:id="@+id/txt_dev_battery_title"
-            android:layout_width="wrap_content"
+        </ListView>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <include layout="@layout/fragment_plot_qsignal" />
+
+        </FrameLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="6dp"
-            android:text="@string/dev_power_title"
-            android:textColor="@color/colorDevStateTitle"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@id/txt_dev_state" />
+            android:paddingTop="10dp">
 
-        <TextView
-            android:id="@+id/txt_dev_battery_power"
-            android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/txt_t3_title"
+                android:layout_width="40dp"
+                android:layout_height="19dp"
+                android:layout_margin="10dp"
+                android:layout_marginBottom="10dp"
+                android:text="@string/el_resistance_t3_title"
+                app:layout_constraintBottom_toTopOf="@+id/txt_o1_title"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <TextView
+                android:id="@+id/txt_t3_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@+id/txt_o1_title"
+                app:layout_constraintStart_toEndOf="@+id/txt_t3_title" />
+
+            <TextView
+                android:id="@+id/txt_t4_title"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="200dp"
+                android:layout_marginBottom="10dp"
+                android:text="@string/el_resistance_t4_title"
+                app:layout_constraintBottom_toTopOf="@+id/txt_o2_title"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <TextView
+                android:id="@+id/txt_t4_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@+id/txt_o2_title"
+                app:layout_constraintStart_toEndOf="@+id/txt_t4_title" />
+
+            <TextView
+                android:id="@+id/txt_o1_title"
+                android:layout_width="40dp"
+                android:layout_height="19dp"
+                android:layout_margin="10dp"
+                android:text="@string/el_resistance_o1_title"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <TextView
+                android:id="@+id/txt_o1_value"
+                android:layout_width="wrap_content"
+                android:layout_height="19dp"
+                android:layout_margin="10dp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/txt_o1_title" />
+
+            <TextView
+                android:id="@+id/txt_o2_title"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="200dp"
+                android:layout_marginBottom="10dp"
+                android:text="@string/el_resistance_o2_title"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <TextView
+                android:id="@+id/txt_o2_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/txt_o2_title" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/clDeviceState"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="6dp"
-            android:text="@string/dev_power_empty"
-            android:textColor="@color/colorDevStateValue"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@id/txt_dev_battery_title" />
+            android:background="@color/colorDevState">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <TextView
+                android:id="@+id/txt_dev_state_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="6dp"
+                android:text="@string/dev_state_title"
+                android:textColor="@color/colorDevStateTitle"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
 
+            <TextView
+                android:id="@+id/txt_dev_state"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="6dp"
+                android:text="@string/dev_state_disconnected"
+                android:textColor="@color/colorDevStateValue"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/txt_dev_state_title" />
+
+            <TextView
+                android:id="@+id/txt_dev_battery_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="6dp"
+                android:text="@string/dev_power_title"
+                android:textColor="@color/colorDevStateTitle"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/txt_dev_state" />
+
+            <TextView
+                android:id="@+id/txt_dev_battery_power"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="6dp"
+                android:text="@string/dev_power_empty"
+                android:textColor="@color/colorDevStateValue"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/txt_dev_battery_title" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
