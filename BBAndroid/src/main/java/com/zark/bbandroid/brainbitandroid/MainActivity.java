@@ -12,7 +12,10 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import com.neuromd.neurosdk.Device;
 import com.neuromd.neurosdk.DeviceInfo;
+import com.neuromd.neurosdk.DeviceState;
+import com.neuromd.neurosdk.ParameterName;
 import com.zark.bbandroid.utils.CommonHelper;
 import com.zark.bbandroid.utils.DeviceHelper;
 import com.zark.bbandroid.utils.SensorHelper;
@@ -42,8 +45,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
    private final ExecutorService _es = Executors.newFixedThreadPool(1);
 
-//   private Boolean _resistance;
-//   private Boolean _signal = false;
+   private Boolean _resistance;
+   private Boolean _signal;
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
@@ -66,11 +69,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
          public void deviceState(boolean state) {
             if (state) {
                tvDevState.setText(R.string.dev_state_connected);
-               clearDevicesListView();
             } else {
                tvDevState.setText(R.string.dev_state_disconnected);
                tvDevBatteryPower.setText(R.string.dev_power_empty);
             }
+            updateContent(state);
          }
       });
 
@@ -93,6 +96,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             updateDevicesListView();
          }
       });
+   }
+
+   private void updateContent(Boolean connectionState) {
+      if (connectionState)
+         clearDevicesListView();
+      _resistance = false;
+      _signal = false;
+      updateButtonState();
+   }
+
+   private void updateButtonState() {
+      Device device = DevHolder.inst().device();
+      if (device == null || device.readParam(ParameterName.State) == DeviceState.Disconnected) {
+         btResistance.setEnabled(false);
+         btSignal.setEnabled(false);
+      } else {
+         if (!_signal) {
+            btResistance.setEnabled(true);
+         } else {
+            btResistance.setEnabled(false);
+         }
+         if (!_resistance) {
+            btSignal.setEnabled(true);
+         } else {
+            btSignal.setEnabled(false);
+         }
+      }
    }
 
    private void initDevicesListView() {
@@ -178,22 +208,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             break;
          case R.id.bt_resistance:
-            startResistance();
+            if (_resistance) {
+               stopResistance();
+            } else {
+               startResistance();
+            }
             break;
          case R.id.bt_signal:
+            if (_signal) {
+               stopSignal();
+            } else {
                startSignal();
+            }
             break;
       }
+      updateButtonState();
    }
 
    private void startResistance() {
       Resistance.inst().init(this);
       Resistance.inst().resistanceStart();
+      _resistance = true;
+   }
+
+   private void stopResistance() {
+      Resistance.inst().stopProcess();
+      _resistance = false;
    }
 
    private void startSignal() {
       Signal.inst().init(this);
       Signal.inst().signalStart();
+      _signal = true;
+   }
+
+   private void stopSignal() {
+      Signal.inst().stopProcess();
+      _signal = false;
    }
 
 }

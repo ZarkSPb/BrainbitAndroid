@@ -9,7 +9,9 @@ import com.neuromd.neurosdk.ChannelInfo;
 import com.neuromd.neurosdk.ChannelType;
 import com.neuromd.neurosdk.Command;
 import com.neuromd.neurosdk.Device;
+import com.neuromd.neurosdk.DeviceState;
 import com.neuromd.neurosdk.INotificationCallback;
+import com.neuromd.neurosdk.ParameterName;
 import com.neuromd.neurosdk.ResistanceChannel;
 import com.neuromd.neurosdk.SourceChannel;
 import com.zark.bbandroid.utils.CommonHelper;
@@ -163,5 +165,40 @@ final class Resistance {
             updateResist(_resistChannelT4, _resT4Val);
          }
       });
+   }
+
+   public void stopProcess() {
+      try {
+         Device device = DevHolder.inst().device();
+         if (device != null) {
+            if (_resistChannelO1 != null) {
+               _resistChannelO1.dataLengthChanged.unsubscribe();
+               _resistChannelO1 = null;
+            }
+            if (_resistChannelO2 != null) {
+               _resistChannelO2.dataLengthChanged.unsubscribe();
+               _resistChannelO2 = null;
+            }
+            if (_resistChannelT3 != null) {
+               _resistChannelT3.dataLengthChanged.unsubscribe();
+               _resistChannelT3 = null;
+            }
+            if (_resistChannelT4 != null) {
+               _resistChannelT4.dataLengthChanged.unsubscribe();
+               _resistChannelT4 = null;
+            }
+            Future<?> futureUpd = _futureUpd;
+            if (futureUpd != null) {
+               _futureUpd = null;
+               futureUpd.cancel(true);
+            }
+            if (device.readParam(ParameterName.State) == DeviceState.Connected) {
+               device.execute(Command.StopResist);
+            }
+         }
+      } catch (Exception ex) {
+         Log.d(TAG, "Failed stop signal", ex);
+         CommonHelper.showMessage(_activity, R.string.err_stop_signal);
+      }
    }
 }
