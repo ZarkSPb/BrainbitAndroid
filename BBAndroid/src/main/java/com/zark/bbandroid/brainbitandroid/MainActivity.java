@@ -12,7 +12,10 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import com.neuromd.neurosdk.Device;
 import com.neuromd.neurosdk.DeviceInfo;
+import com.neuromd.neurosdk.DeviceState;
+import com.neuromd.neurosdk.ParameterName;
 import com.zark.bbandroid.utils.CommonHelper;
 import com.zark.bbandroid.utils.DeviceHelper;
 import com.zark.bbandroid.utils.SensorHelper;
@@ -23,13 +26,15 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
    private final String TAG = "[MainActivity]";
    private final String DEV_NAME_KEY = "name";
    private final String DEV_ADDRESS_KEY = "address";
 
    private Button btSearch;
+   private Button btResistance;
+   private Button btSignal;
    private ListView lvDevices;
 
    private TextView tvDevState;
@@ -39,6 +44,9 @@ public class MainActivity extends AppCompatActivity {
    private final ArrayList<HashMap<String, String>> _deviceInfoList = new ArrayList<>();
 
    private final ExecutorService _es = Executors.newFixedThreadPool(1);
+
+   private Boolean _resistance;
+   private Boolean _signal;
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
@@ -65,20 +73,17 @@ public class MainActivity extends AppCompatActivity {
                tvDevState.setText(R.string.dev_state_disconnected);
                tvDevBatteryPower.setText(R.string.dev_power_empty);
             }
+            updateContent(state);
          }
       });
 
       btSearch = findViewById(R.id.bt_search);
-      btSearch.setOnClickListener(new View.OnClickListener() {
-         @Override
-         public void onClick(View v) {
-            if (DevHolder.inst().isSearchStarted()) {
-               stopSearch();
-            } else {
-               startSearch();
-            }
-         }
-      });
+      btSearch.setOnClickListener(this);
+      btResistance = findViewById(R.id.bt_resistance);
+      btResistance.setOnClickListener(this);
+      btSignal = findViewById(R.id.bt_signal);
+      btSignal.setOnClickListener(this);
+
       initDevicesListView();
       DevHolder.inst().setDeviceEvent(new DeviceHelper.IDeviceEvent() {
          @Override
@@ -91,6 +96,33 @@ public class MainActivity extends AppCompatActivity {
             updateDevicesListView();
          }
       });
+   }
+
+   private void updateContent(Boolean connectionState) {
+      if (connectionState)
+         clearDevicesListView();
+      _resistance = false;
+      _signal = false;
+      updateButtonState();
+   }
+
+   private void updateButtonState() {
+      Device device = DevHolder.inst().device();
+      if (device == null || device.readParam(ParameterName.State) == DeviceState.Disconnected) {
+         btResistance.setEnabled(false);
+         btSignal.setEnabled(false);
+      } else {
+         if (!_signal) {
+            btResistance.setEnabled(true);
+         } else {
+            btResistance.setEnabled(false);
+         }
+         if (!_resistance) {
+            btSignal.setEnabled(true);
+         } else {
+            btSignal.setEnabled(false);
+         }
+      }
    }
 
    private void initDevicesListView() {
@@ -164,4 +196,55 @@ public class MainActivity extends AppCompatActivity {
          }
       });
    }
+
+   @Override
+   public void onClick(View view) {
+      switch (view.getId()) {
+         case R.id.bt_search:
+            if (DevHolder.inst().isSearchStarted()) {
+               stopSearch();
+            } else {
+               startSearch();
+            }
+            break;
+         case R.id.bt_resistance:
+            if (_resistance) {
+               stopResistance();
+            } else {
+               startResistance();
+            }
+            break;
+         case R.id.bt_signal:
+            if (_signal) {
+               stopSignal();
+            } else {
+               startSignal();
+            }
+            break;
+      }
+      updateButtonState();
+   }
+
+   private void startResistance() {
+      Resistance.inst().init(this);
+      Resistance.inst().resistanceStart();
+      _resistance = true;
+   }
+
+   private void stopResistance() {
+      Resistance.inst().stopProcess();
+      _resistance = false;
+   }
+
+   private void startSignal() {
+      Signal.inst().init(this);
+      Signal.inst().signalStart();
+      _signal = true;
+   }
+
+   private void stopSignal() {
+      Signal.inst().stopProcess();
+      _signal = false;
+   }
+
 }

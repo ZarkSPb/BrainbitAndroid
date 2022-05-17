@@ -13,4 +13,16 @@
 
     <string name="device_search_connected">Device connection success</string>
     <string name="device_search_connection_failed">Device connection failed</string>
+
+    <string name="err_start_signal">Failed start signal</string>
+    <string name="err_stop_signal">Failed stop signal</string>
+
+    <string name="el_resistance_o1_title">O1:</string>
+    <string name="el_resistance_o2_title">O2:</string>
+    <string name="el_resistance_t3_title">T3:</string>
+    <string name="el_resistance_t4_title">T4:</string>
+    <string name="el_resistance_value">%1$.1f kOm</string>
+    <string name="el_resistance_infinity_value">ꝏ kOm</string>
+
+    <string name="resistance_demo_mode_title">Resistance</string>
 </resources>
