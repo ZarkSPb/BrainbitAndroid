@@ -22,18 +22,18 @@
 
             <Button
                 android:id="@+id/bt_search"
+                style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="4dp"
                 android:layout_weight="1"
                 android:text="@string/btn_start_search_title"
                 android:textSize="14sp" />
 
             <Button
                 android:id="@+id/bt_resistance"
+                style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="4dp"
                 android:layout_weight="1"
                 android:enabled="false"
                 android:text="@string/resistance_demo_mode_title"
@@ -41,9 +41,9 @@
 
             <Button
                 android:id="@+id/bt_signal"
+                style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="4dp"
                 android:layout_weight="1"
                 android:enabled="false"
                 android:text="Signal"
@@ -54,8 +54,7 @@
         <ListView
             android:id="@+id/lv_devices"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp">
+            android:layout_height="wrap_content">
 
         </ListView>
 
@@ -77,8 +76,7 @@
                 android:id="@+id/txt_t3_title"
                 android:layout_width="40dp"
                 android:layout_height="19dp"
-                android:layout_margin="10dp"
-                android:layout_marginBottom="10dp"
+                android:layout_margin="8dp"
                 android:text="@string/el_resistance_t3_title"
                 app:layout_constraintBottom_toTopOf="@+id/txt_o1_title"
                 app:layout_constraintStart_toStartOf="parent" />
@@ -87,7 +85,7 @@
                 android:id="@+id/txt_t3_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
+                android:layout_margin="8dp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toTopOf="@+id/txt_o1_title"
                 app:layout_constraintStart_toEndOf="@+id/txt_t3_title" />
@@ -97,7 +95,7 @@
                 android:layout_width="40dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="200dp"
-                android:layout_marginBottom="10dp"
+                android:layout_marginBottom="8dp"
                 android:text="@string/el_resistance_t4_title"
                 app:layout_constraintBottom_toTopOf="@+id/txt_o2_title"
                 app:layout_constraintStart_toStartOf="parent" />
@@ -106,7 +104,7 @@
                 android:id="@+id/txt_t4_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
+                android:layout_margin="8dp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toTopOf="@+id/txt_o2_title"
                 app:layout_constraintStart_toEndOf="@+id/txt_t4_title" />
@@ -115,7 +113,7 @@
                 android:id="@+id/txt_o1_title"
                 android:layout_width="40dp"
                 android:layout_height="19dp"
-                android:layout_margin="10dp"
+                android:layout_margin="8dp"
                 android:text="@string/el_resistance_o1_title"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
@@ -124,7 +122,7 @@
                 android:id="@+id/txt_o1_value"
                 android:layout_width="wrap_content"
                 android:layout_height="19dp"
-                android:layout_margin="10dp"
+                android:layout_margin="8dp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/txt_o1_title" />
@@ -134,7 +132,7 @@
                 android:layout_width="40dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="200dp"
-                android:layout_marginBottom="10dp"
+                android:layout_marginBottom="8dp"
                 android:text="@string/el_resistance_o2_title"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
@@ -143,7 +141,7 @@
                 android:id="@+id/txt_o2_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
+                android:layout_margin="8dp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/txt_o2_title" />
