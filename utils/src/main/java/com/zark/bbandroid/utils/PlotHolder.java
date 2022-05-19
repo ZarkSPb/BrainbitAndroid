@@ -3,6 +3,7 @@ package com.zark.bbandroid.utils;
 
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 
 import com.androidplot.ui.HorizontalPositioning;
 import com.androidplot.ui.Size;
@@ -113,6 +114,7 @@ public class PlotHolder {
 
    private int signalDataReceived(BaseDoubleChannel channel, int offset) {
       int length = channel.totalLength() - offset;
+      Log.d("[PlotHolder]", _channel.info().getName() + " - " + length);
       SignalDoubleModel ser = _plotSeries;
       if (ser != null)
          ser.addData(channel.readData(offset, length));

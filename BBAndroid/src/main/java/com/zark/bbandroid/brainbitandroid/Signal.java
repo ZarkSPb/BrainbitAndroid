@@ -11,6 +11,7 @@ import com.neuromd.neurosdk.ChannelType;
 import com.neuromd.neurosdk.Command;
 import com.neuromd.neurosdk.Device;
 import com.neuromd.neurosdk.DeviceState;
+import com.neuromd.neurosdk.EegChannel;
 import com.neuromd.neurosdk.ParameterName;
 import com.neuromd.neurosdk.SignalChannel;
 import com.neuromd.neurosdk.SourceChannel;
@@ -20,7 +21,7 @@ import com.zark.bbandroid.utils.PlotHolder;
 final class Signal {
    private final static String TAG = "[Signal]";
    private final static Object _mutex = new Object();
-   private static  volatile Signal _inst;
+   private static volatile Signal _inst;
 
    private PlotHolder plotO1;
    private PlotHolder plotO2;
@@ -42,7 +43,7 @@ final class Signal {
    }
 
    public void init(AppCompatActivity activity) {
-      if(activity != null) {
+      if (activity != null) {
          _activity = activity;
          initPlot();
       }
@@ -58,17 +59,39 @@ final class Signal {
    public void signalStart() {
       try {
          Device device = DevHolder.inst().device();
-         if(device != null) {
+         if (device != null) {
             ChannelInfo channelInfoO1 = DevHolder.inst().getDevChannel(SourceChannel.O1.name(), ChannelType.Signal);
             ChannelInfo channelInfoO2 = DevHolder.inst().getDevChannel(SourceChannel.O2.name(), ChannelType.Signal);
             ChannelInfo channelInfoT3 = DevHolder.inst().getDevChannel(SourceChannel.T3.name(), ChannelType.Signal);
             ChannelInfo channelInfoT4 = DevHolder.inst().getDevChannel(SourceChannel.T4.name(), ChannelType.Signal);
             if (channelInfoO1 != null && channelInfoO2 != null && channelInfoT3 != null && channelInfoT4 != null) {
                configureDevice(device);
-               plotO1.startRender(new SignalChannel(device, channelInfoO1), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
-               plotO2.startRender(new SignalChannel(device, channelInfoO2), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
-               plotT3.startRender(new SignalChannel(device, channelInfoT3), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
-               plotT4.startRender(new SignalChannel(device, channelInfoT4), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
+//               plotO1.startRender(new SignalChannel(device, channelInfoO1), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
+//               plotO2.startRender(new SignalChannel(device, channelInfoO2), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
+//               plotT3.startRender(new SignalChannel(device, channelInfoT3), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
+//               plotT4.startRender(new SignalChannel(device, channelInfoT4), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
+               plotO1.startRender(new EegChannel(device, channelInfoO1), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
+               plotO2.startRender(new EegChannel(device, channelInfoO2), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
+               plotT3.startRender(new EegChannel(device, channelInfoT3), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
+               plotT4.startRender(new EegChannel(device, channelInfoT4), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
+            }
+         }
+      } catch (Exception ex) {
+         Log.d(TAG, "Failed start signal", ex);
+         CommonHelper.showMessage(_activity, R.string.err_start_signal);
+      }
+   }
+
+   public void syncSignalStart() {
+      try {
+         Device device = DevHolder.inst().device();
+         if (device != null) {
+            ChannelInfo channelInfo = DevHolder.inst().getDevChannel(ChannelType.BrainbitSync);
+            if(channelInfo != null) {
+               configureDevice(device);
+
+               // code here
+
             }
          }
       } catch (Exception ex) {
