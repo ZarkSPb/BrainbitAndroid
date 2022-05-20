@@ -239,7 +239,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
    private void startSignal() {
       Signal.inst().init(this);
-      Signal.inst().signalStart();
+//      Signal.inst().signalStart();
+      Signal.inst().syncSignalStart();
       _signal = true;
    }
 

@@ -1,11 +1,11 @@
 package com.zark.bbandroid.brainbitandroid;
 
 import android.util.Log;
-import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.androidplot.xy.XYPlot;
+import com.neuromd.neurosdk.BrainbitSyncChannel;
 import com.neuromd.neurosdk.ChannelInfo;
 import com.neuromd.neurosdk.ChannelType;
 import com.neuromd.neurosdk.Command;
@@ -13,7 +13,6 @@ import com.neuromd.neurosdk.Device;
 import com.neuromd.neurosdk.DeviceState;
 import com.neuromd.neurosdk.EegChannel;
 import com.neuromd.neurosdk.ParameterName;
-import com.neuromd.neurosdk.SignalChannel;
 import com.neuromd.neurosdk.SourceChannel;
 import com.zark.bbandroid.utils.CommonHelper;
 import com.zark.bbandroid.utils.PlotHolder;
@@ -27,6 +26,8 @@ final class Signal {
    private PlotHolder plotO2;
    private PlotHolder plotT3;
    private PlotHolder plotT4;
+
+   private ClearSignal _signalBase;
 
    private AppCompatActivity _activity;
 
@@ -46,6 +47,7 @@ final class Signal {
       if (activity != null) {
          _activity = activity;
          initPlot();
+         initRAWSignal();
       }
    }
 
@@ -54,6 +56,10 @@ final class Signal {
       plotO2 = new PlotHolder((XYPlot) _activity.findViewById(R.id.plot_signal_2));
       plotT3 = new PlotHolder((XYPlot) _activity.findViewById(R.id.plot_signal_3));
       plotT4 = new PlotHolder((XYPlot) _activity.findViewById(R.id.plot_signal_4));
+   }
+
+   private void initRAWSignal() {
+      _signalBase = new ClearSignal();
    }
 
    public void signalStart() {
@@ -82,17 +88,14 @@ final class Signal {
       }
    }
 
+
+   // RAW Signal
    public void syncSignalStart() {
       try {
          Device device = DevHolder.inst().device();
          if (device != null) {
-            ChannelInfo channelInfo = DevHolder.inst().getDevChannel(ChannelType.BrainbitSync);
-            if(channelInfo != null) {
-               configureDevice(device);
-
-               // code here
-
-            }
+            configureDevice(device);
+            _signalBase.startSignal(new BrainbitSyncChannel(device));
          }
       } catch (Exception ex) {
          Log.d(TAG, "Failed start signal", ex);
@@ -103,7 +106,6 @@ final class Signal {
    private void configureDevice(Device device) {
       device.execute(Command.StartSignal);
    }
-
 
    public void stopProcess() {
       if (plotO1 != null) {
