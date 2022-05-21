@@ -59,7 +59,7 @@ final class Signal {
    }
 
    private void initRAWSignal() {
-      _signalBase = new ClearSignal();
+      _signalBase = new ClearSignal((XYPlot) _activity.findViewById(R.id.plot_signal_1));
    }
 
    public void signalStart() {
@@ -95,7 +95,7 @@ final class Signal {
          Device device = DevHolder.inst().device();
          if (device != null) {
             configureDevice(device);
-            _signalBase.startSignal(new BrainbitSyncChannel(device));
+            _signalBase.startRender(new BrainbitSyncChannel(device), ClearSignal.ZoomVal.V_000005, 5.0f);
          }
       } catch (Exception ex) {
          Log.d(TAG, "Failed start signal", ex);
@@ -120,6 +120,11 @@ final class Signal {
       if (plotT4 != null) {
          plotT4.stopRender();
       }
+
+      if (_signalBase != null) {
+         _signalBase.stopRender();
+      }
+
       try {
          Device device = DevHolder.inst().device();
          if (device != null) {
