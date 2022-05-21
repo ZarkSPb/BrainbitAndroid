@@ -95,7 +95,7 @@ final class Signal {
          Device device = DevHolder.inst().device();
          if (device != null) {
             configureDevice(device);
-            _signalBase.startRender(new BrainbitSyncChannel(device), ClearSignal.ZoomVal.V_000005, 5.0f);
+            _signalBase.startRender(new BrainbitSyncChannel(device), ClearSignal.ZoomVal.V_AUTO_M_S2, 5.0f);
          }
       } catch (Exception ex) {
          Log.d(TAG, "Failed start signal", ex);

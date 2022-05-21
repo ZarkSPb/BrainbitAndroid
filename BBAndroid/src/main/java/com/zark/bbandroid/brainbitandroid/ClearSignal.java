@@ -1,6 +1,7 @@
 package com.zark.bbandroid.brainbitandroid;
 
 import android.graphics.Paint;
+import android.nfc.Tag;
 import android.util.Log;
 
 import com.androidplot.xy.AdvancedLineAndPointRenderer;
@@ -22,16 +23,21 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ClearSignal {
+   private final static String TAG = "[ClearSignal]";
    private final XYPlot _plotSignal;
    private SignalDoubleModel _plotSeries;
    private BrainbitSyncChannel _channel;
    private INotificationCallback<Integer> _notificationCallback;
+
    private ZoomVal _zoomVal;
    private double[][] _data = new double[4][450000];
-   private int _lastIndex = -1;
+   private int _lastIndex;
    private int _sampleRate;
 
    public ClearSignal(XYPlot plotSignal) {
@@ -64,6 +70,9 @@ public class ClearSignal {
          }
       };
       _channel = channel;
+      _lastIndex = -1;
+
+
       channel.dataLengthChanged.subscribe(_notificationCallback);
    }
 
@@ -84,8 +93,8 @@ public class ClearSignal {
 
    private int signalDataReceived(BrainbitSyncChannel channel, int offset) {
       int length = channel.totalLength() - offset;
-      BrainbitSyncData[] data = channel.readData(offset, length);
       if (length > 0) {
+         BrainbitSyncData[] data = channel.readData(offset, length);
          for (int i = 0; i < length; i++) {
             _lastIndex++;
             _data[0][_lastIndex] = data[i].O1;
@@ -94,27 +103,16 @@ public class ClearSignal {
             _data[3][_lastIndex] = data[i].T4;
          }
 
-         double [] signalFiltered = Arrays.copyOfRange(_data[0], _lastIndex - 1000 - length, _lastIndex);
-         signalFiltering(signalFiltered);
+         double[] dataFiltered = Arrays.copyOfRange(_data[0], _lastIndex - 1000 - length + 1, _lastIndex + 1);
+         Log.d(TAG, " ");
+         Log.d(TAG, length + " - " + dataFiltered.length);
+         signalFiltering(dataFiltered);
 
          SignalDoubleModel ser = _plotSeries;
-         if (ser != null)
-//            ser.addData(Arrays.copyOfRange(_data[0], _lastIndex - length, _lastIndex));
-            ser.addData(Arrays.copyOfRange(signalFiltered, 1000, 1000 + length));
+         if (ser != null) {
+            ser.addData(Arrays.copyOfRange(dataFiltered, 1000, 1000 + length));
+         }
       }
-
-//      Log.d("[ClearSignal]", " ");
-//      Log.d("[ClearSignal]", "---------" + length + "---------");
-//      if (length > 0) {
-//         for(int i = 0; i < length; i++) {
-//            Log.d("[ClearSignal]", data[i].O1 + " " + data[i].O2 + " " + data[i].T3 + " " + data[i].T4);
-//         }
-//      }
-//      Log.d("[ClearSignal]", "" + _lastIndex);
-//      Log.d("[ClearSignal]", _data[0][_lastIndex] + " " + _data[1][_lastIndex] + " " + _data[2][_lastIndex] + " " + _data[3][_lastIndex]);
-
-//      DataFilter.detrend(, DetrendOperations.CONSTANT);
-
       return length;
    }
 
@@ -188,7 +186,6 @@ public class ClearSignal {
                render.getPlot().setRangeBoundaries(_minYLast.doubleValue() - offset, _maxYLast.doubleValue() + offset, BoundaryMode.FIXED);
             }
          }
-
          render.setLatestIndex(_latestIndex);
       }
 
