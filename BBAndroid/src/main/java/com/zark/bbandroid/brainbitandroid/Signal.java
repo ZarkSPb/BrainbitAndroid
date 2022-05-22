@@ -108,16 +108,22 @@ final class Signal {
          }
 
          double[] dataFiltered = Arrays.copyOfRange(_data[0], _lastIndex - 1000 - length + 1, _lastIndex + 1);
-         Log.d(TAG, " ");
-         Log.d(TAG, length + " - " + dataFiltered.length);
+//         Log.d(TAG, " ");
+//         Log.d(TAG, length + " - " + dataFiltered.length);
          signalFiltering(dataFiltered);
-
-//         SignalHolder.SignalDoubleModel ser = _plotSeries;
-//         if (ser != null) {
-//            ser.addData(Arrays.copyOfRange(dataFiltered, 1000, 1000 + length));
-//         }
-
          plotO1.addData(Arrays.copyOfRange(dataFiltered, 1000, 1000 + length));
+
+         dataFiltered = Arrays.copyOfRange(_data[1], _lastIndex - 1000 - length + 1, _lastIndex + 1);
+         signalFiltering(dataFiltered);
+         plotO2.addData(Arrays.copyOfRange(dataFiltered, 1000, 1000 + length));
+
+         dataFiltered = Arrays.copyOfRange(_data[2], _lastIndex - 1000 - length + 1, _lastIndex + 1);
+         signalFiltering(dataFiltered);
+         plotT3.addData(Arrays.copyOfRange(dataFiltered, 1000, 1000 + length));
+
+         dataFiltered = Arrays.copyOfRange(_data[3], _lastIndex - 1000 - length + 1, _lastIndex + 1);
+         signalFiltering(dataFiltered);
+         plotT4.addData(Arrays.copyOfRange(dataFiltered, 1000, 1000 + length));
       }
       return length;
    }
