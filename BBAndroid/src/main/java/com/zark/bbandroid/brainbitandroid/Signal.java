@@ -6,30 +6,39 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.androidplot.xy.XYPlot;
 import com.neuromd.neurosdk.BrainbitSyncChannel;
-import com.neuromd.neurosdk.ChannelInfo;
-import com.neuromd.neurosdk.ChannelType;
+import com.neuromd.neurosdk.BrainbitSyncData;
 import com.neuromd.neurosdk.Command;
 import com.neuromd.neurosdk.Device;
 import com.neuromd.neurosdk.DeviceState;
-import com.neuromd.neurosdk.EegChannel;
+import com.neuromd.neurosdk.INotificationCallback;
 import com.neuromd.neurosdk.ParameterName;
-import com.neuromd.neurosdk.SourceChannel;
 import com.zark.bbandroid.utils.CommonHelper;
-import com.zark.bbandroid.utils.PlotHolder;
+
+import java.util.Arrays;
+
+import brainflow.BrainFlowError;
+import brainflow.DataFilter;
+import brainflow.DetrendOperations;
+import brainflow.FilterTypes;
 
 final class Signal {
    private final static String TAG = "[Signal]";
    private final static Object _mutex = new Object();
    private static volatile Signal _inst;
 
-   private PlotHolder plotO1;
-   private PlotHolder plotO2;
-   private PlotHolder plotT3;
-   private PlotHolder plotT4;
+   private SignalHolder plotO1;
+   private SignalHolder plotO2;
+   private SignalHolder plotT3;
+   private SignalHolder plotT4;
 
-   private ClearSignal _signalBase;
+   private BrainbitSyncChannel _channel;
+   private INotificationCallback<Integer> _notificationCallback;
 
    private AppCompatActivity _activity;
+
+   private double[][] _data = new double[4][450000];
+   private int _lastIndex;
+   private int _sampleRate;
 
    public static Signal inst() {
       Signal instRef = _inst;
@@ -47,40 +56,38 @@ final class Signal {
       if (activity != null) {
          _activity = activity;
          initPlot();
-         initRAWSignal();
       }
    }
 
    private void initPlot() {
-      plotO1 = new PlotHolder((XYPlot) _activity.findViewById(R.id.plot_signal_1));
-      plotO2 = new PlotHolder((XYPlot) _activity.findViewById(R.id.plot_signal_2));
-      plotT3 = new PlotHolder((XYPlot) _activity.findViewById(R.id.plot_signal_3));
-      plotT4 = new PlotHolder((XYPlot) _activity.findViewById(R.id.plot_signal_4));
-   }
-
-   private void initRAWSignal() {
-      _signalBase = new ClearSignal((XYPlot) _activity.findViewById(R.id.plot_signal_1));
+      plotO1 = new SignalHolder((XYPlot) _activity.findViewById(R.id.plot_signal_1));
+      plotO2 = new SignalHolder((XYPlot) _activity.findViewById(R.id.plot_signal_2));
+      plotT3 = new SignalHolder((XYPlot) _activity.findViewById(R.id.plot_signal_3));
+      plotT4 = new SignalHolder((XYPlot) _activity.findViewById(R.id.plot_signal_4));
    }
 
    public void signalStart() {
+      stopProcess();
       try {
          Device device = DevHolder.inst().device();
          if (device != null) {
-            ChannelInfo channelInfoO1 = DevHolder.inst().getDevChannel(SourceChannel.O1.name(), ChannelType.Signal);
-            ChannelInfo channelInfoO2 = DevHolder.inst().getDevChannel(SourceChannel.O2.name(), ChannelType.Signal);
-            ChannelInfo channelInfoT3 = DevHolder.inst().getDevChannel(SourceChannel.T3.name(), ChannelType.Signal);
-            ChannelInfo channelInfoT4 = DevHolder.inst().getDevChannel(SourceChannel.T4.name(), ChannelType.Signal);
-            if (channelInfoO1 != null && channelInfoO2 != null && channelInfoT3 != null && channelInfoT4 != null) {
-               configureDevice(device);
-//               plotO1.startRender(new SignalChannel(device, channelInfoO1), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
-//               plotO2.startRender(new SignalChannel(device, channelInfoO2), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
-//               plotT3.startRender(new SignalChannel(device, channelInfoT3), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
-//               plotT4.startRender(new SignalChannel(device, channelInfoT4), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
-               plotO1.startRender(new EegChannel(device, channelInfoO1), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
-               plotO2.startRender(new EegChannel(device, channelInfoO2), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
-               plotT3.startRender(new EegChannel(device, channelInfoT3), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
-               plotT4.startRender(new EegChannel(device, channelInfoT4), PlotHolder.ZoomVal.V_AUTO_M_S2, 5.0f);
-            }
+            _channel = new BrainbitSyncChannel(device);
+            _sampleRate = (int) _channel.samplingFrequency();
+            configureDevice(device);
+            plotO1.startRender(SignalHolder.ZoomVal.V_AUTO_M_S2, 5.0f, _channel.samplingFrequency());
+            plotO2.startRender(SignalHolder.ZoomVal.V_AUTO_M_S2, 5.0f, _channel.samplingFrequency());
+            plotT3.startRender(SignalHolder.ZoomVal.V_AUTO_M_S2, 5.0f, _channel.samplingFrequency());
+            plotT4.startRender(SignalHolder.ZoomVal.V_AUTO_M_S2, 5.0f, _channel.samplingFrequency());
+
+            _notificationCallback =  new INotificationCallback<Integer>() {
+               int _offsetData;
+               @Override
+               public void onNotify(Object sender, Integer nParam) {
+                  _offsetData += signalDataReceived(_channel, _offsetData);
+               }
+            };
+            _lastIndex = -1;
+            _channel.dataLengthChanged.subscribe(_notificationCallback);
          }
       } catch (Exception ex) {
          Log.d(TAG, "Failed start signal", ex);
@@ -88,18 +95,42 @@ final class Signal {
       }
    }
 
-
-   // RAW Signal
-   public void syncSignalStart() {
-      try {
-         Device device = DevHolder.inst().device();
-         if (device != null) {
-            configureDevice(device);
-            _signalBase.startRender(new BrainbitSyncChannel(device), ClearSignal.ZoomVal.V_AUTO_M_S2, 5.0f);
+   private int signalDataReceived(BrainbitSyncChannel channel, int offset) {
+      int length = channel.totalLength() - offset;
+      if (length > 0) {
+         BrainbitSyncData[] data = channel.readData(offset, length);
+         for (int i = 0; i < length; i++) {
+            _lastIndex++;
+            _data[0][_lastIndex] = data[i].O1;
+            _data[1][_lastIndex] = data[i].O2;
+            _data[2][_lastIndex] = data[i].T3;
+            _data[3][_lastIndex] = data[i].T4;
          }
-      } catch (Exception ex) {
-         Log.d(TAG, "Failed start signal", ex);
-         CommonHelper.showMessage(_activity, R.string.err_start_signal);
+
+         double[] dataFiltered = Arrays.copyOfRange(_data[0], _lastIndex - 1000 - length + 1, _lastIndex + 1);
+         Log.d(TAG, " ");
+         Log.d(TAG, length + " - " + dataFiltered.length);
+         signalFiltering(dataFiltered);
+
+//         SignalHolder.SignalDoubleModel ser = _plotSeries;
+//         if (ser != null) {
+//            ser.addData(Arrays.copyOfRange(dataFiltered, 1000, 1000 + length));
+//         }
+
+         plotO1.addData(Arrays.copyOfRange(dataFiltered, 1000, 1000 + length));
+      }
+      return length;
+   }
+
+   private void signalFiltering(double[] data) {
+      try {
+         DataFilter.detrend(data, DetrendOperations.CONSTANT.get_code());
+         DataFilter.perform_bandpass(data, _sampleRate, 17.0, 26.0, 4, FilterTypes.BUTTERWORTH.get_code(), 0.0);
+         DataFilter.perform_bandpass(data, _sampleRate, 17.0, 26.0, 4, FilterTypes.BUTTERWORTH.get_code(), 0.0);
+         DataFilter.perform_bandstop(data, _sampleRate, 50.0, 4.0, 4, FilterTypes.BUTTERWORTH.get_code(), 0.0);
+         DataFilter.perform_bandstop(data, _sampleRate, 60.0, 4.0, 4, FilterTypes.BUTTERWORTH.get_code(), 0.0);
+      } catch (BrainFlowError bfe) {
+         // skip
       }
    }
 
@@ -108,6 +139,12 @@ final class Signal {
    }
 
    public void stopProcess() {
+      if(_channel != null && _notificationCallback != null) {
+         _channel.dataLengthChanged.unsubscribe(_notificationCallback);
+         _channel = null;
+         _notificationCallback = null;
+      }
+
       if (plotO1 != null) {
          plotO1.stopRender();
       }
@@ -119,10 +156,6 @@ final class Signal {
       }
       if (plotT4 != null) {
          plotT4.stopRender();
-      }
-
-      if (_signalBase != null) {
-         _signalBase.stopRender();
       }
 
       try {

@@ -1,9 +1,15 @@
 package com.zark.bbandroid.brainbitandroid;
 
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.nfc.Tag;
 import android.util.Log;
 
+import com.androidplot.ui.HorizontalPositioning;
+import com.androidplot.ui.Size;
+import com.androidplot.ui.SizeMode;
+import com.androidplot.ui.VerticalPositioning;
+import com.androidplot.util.Redrawer;
 import com.androidplot.xy.AdvancedLineAndPointRenderer;
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.XYPlot;
@@ -28,52 +34,36 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ClearSignal {
+public class SignalHolder {
    private final static String TAG = "[ClearSignal]";
    private final XYPlot _plotSignal;
    private SignalDoubleModel _plotSeries;
-   private BrainbitSyncChannel _channel;
-   private INotificationCallback<Integer> _notificationCallback;
 
    private ZoomVal _zoomVal;
    private double[][] _data = new double[4][450000];
-   private int _lastIndex;
-   private int _sampleRate;
 
-   public ClearSignal(XYPlot plotSignal) {
-      if(plotSignal == null)
+   public SignalHolder(XYPlot plotSignal) {
+      if (plotSignal == null)
          throw new NullPointerException("plotSignal can not be null");
       _plotSignal = plotSignal;
+      initPlot();
    }
 
-   public void startRender(BrainbitSyncChannel channel, ZoomVal zoomVal, float windowDurationSek) {
-      if (channel == null || channel == _channel)
-         return;
+   public void startRender(ZoomVal zoomVal, float windowDurationSek, float sampleRate) {
       stopRender();
       float wndSizeSek = windowDurationSek <= 0 ? 5.0f : windowDurationSek;
-      _sampleRate = (int) channel.samplingFrequency();
-      int size = (int) Math.ceil(channel.samplingFrequency() * wndSizeSek);
-      _plotSeries = new SignalDoubleModel(size, channel.samplingFrequency(), zoomVal.isAuto(), zoomVal.getTop().doubleValue());
+      int size = (int) Math.ceil(sampleRate * wndSizeSek);
+      _plotSeries = new SignalDoubleModel(size, sampleRate, zoomVal.isAuto(), zoomVal.getTop().doubleValue());
       SignalFadeFormatter formatter = new SignalFadeFormatter(size);
       formatter.setLegendIconEnabled(false);
       _plotSignal.addSeries(_plotSeries, formatter);
       setZoomY(zoomVal);
       _plotSignal.setDomainBoundaries(0, wndSizeSek, BoundaryMode.FIXED);
       _plotSeries.setRenderRef(new WeakReference<>(_plotSignal.getRenderer(AdvancedLineAndPointRenderer.class)));
+   }
 
-      _notificationCallback = new INotificationCallback<Integer>() {
-         int _offsetData;
-
-         @Override
-         public void onNotify(Object sender, Integer nParam) {
-            _offsetData += signalDataReceived(_channel, _offsetData);
-         }
-      };
-      _channel = channel;
-      _lastIndex = -1;
-
-
-      channel.dataLengthChanged.subscribe(_notificationCallback);
+   public void addData(double[] data) {
+      _plotSeries.addData(data);
    }
 
    public void setZoomY(ZoomVal zoomVal) {
@@ -91,41 +81,22 @@ public class ClearSignal {
       }
    }
 
-   private int signalDataReceived(BrainbitSyncChannel channel, int offset) {
-      int length = channel.totalLength() - offset;
-      if (length > 0) {
-         BrainbitSyncData[] data = channel.readData(offset, length);
-         for (int i = 0; i < length; i++) {
-            _lastIndex++;
-            _data[0][_lastIndex] = data[i].O1;
-            _data[1][_lastIndex] = data[i].O2;
-            _data[2][_lastIndex] = data[i].T3;
-            _data[3][_lastIndex] = data[i].T4;
-         }
-
-         double[] dataFiltered = Arrays.copyOfRange(_data[0], _lastIndex - 1000 - length + 1, _lastIndex + 1);
-         Log.d(TAG, " ");
-         Log.d(TAG, length + " - " + dataFiltered.length);
-         signalFiltering(dataFiltered);
-
-         SignalDoubleModel ser = _plotSeries;
-         if (ser != null) {
-            ser.addData(Arrays.copyOfRange(dataFiltered, 1000, 1000 + length));
-         }
-      }
-      return length;
-   }
-
    public void stopRender() {
-      if (_channel != null && _notificationCallback != null) {
-         _channel.dataLengthChanged.unsubscribe(_notificationCallback);
-         _channel = null;
-         _notificationCallback = null;
-      }
       if (_plotSeries != null) {
          _plotSignal.removeSeries(_plotSeries);
          _plotSeries = null;
       }
+   }
+
+   private void initPlot() {
+      _plotSignal.getGraph().getGridBackgroundPaint().setColor(Color.TRANSPARENT);
+      _plotSignal.getBackgroundPaint().setColor(Color.TRANSPARENT);
+      _plotSignal.getGraph().getBackgroundPaint().setColor(Color.TRANSPARENT);
+      _plotSignal.getBorderPaint().setColor(Color.TRANSPARENT);
+      _plotSignal.getGraph().setSize(new Size(0, SizeMode.FILL, 0, SizeMode.FILL));
+      _plotSignal.getGraph().position(0, HorizontalPositioning.ABSOLUTE_FROM_LEFT, 0, VerticalPositioning.ABSOLUTE_FROM_TOP);
+      _plotSignal.setLinesPerRangeLabel(3);
+      new Redrawer(_plotSignal, 30, true);
    }
 
    private final static class SignalDoubleModel implements XYSeries {
@@ -297,18 +268,6 @@ public class ClearSignal {
 
       boolean isAuto() {
          return _auto;
-      }
-   }
-
-   private void signalFiltering(double[] data) {
-      try {
-         DataFilter.detrend(data, DetrendOperations.CONSTANT.get_code());
-         DataFilter.perform_bandpass(data, _sampleRate, 17.0, 26.0, 4, FilterTypes.BUTTERWORTH.get_code(), 0.0);
-         DataFilter.perform_bandpass(data, _sampleRate, 17.0, 26.0, 4, FilterTypes.BUTTERWORTH.get_code(), 0.0);
-         DataFilter.perform_bandstop(data, _sampleRate, 50.0, 4.0, 4, FilterTypes.BUTTERWORTH.get_code(), 0.0);
-         DataFilter.perform_bandstop(data, _sampleRate, 60.0, 4.0, 4, FilterTypes.BUTTERWORTH.get_code(), 0.0);
-      } catch (BrainFlowError bfe) {
-         // skip
       }
    }
 }
