@@ -101,6 +101,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    private void updateContent(Boolean connectionState) {
       if (connectionState)
          clearDevicesListView();
+      Resistance.inst().stopProcess();
+      Signal.inst().stopProcess();
       _resistance = false;
       _signal = false;
       updateButtonState();
@@ -183,7 +185,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    public void stopSearch() {
       DevHolder.inst().stopSearch();
    }
-
 
    private void connectToDevice(final String address) {
       _es.execute(() -> {
