@@ -16,17 +16,18 @@ import com.zark.bbandroid.utils.MinMaxArrayHelper;
 import com.zark.bbandroid.utils.PlotHolder;
 
 import java.lang.ref.WeakReference;
-
 import java.util.concurrent.atomic.AtomicReference;
 
-public class SignalHolder {
-   private final static String TAG = "[ClearSignal]";
+public class RhythmHolder {
+   private final static String TAG = "[RhythmHolder]";
    private final XYPlot _plotSignal;
-   private SignalDoubleModel _plotSeries;
+   private SignalDoubleModel _plotSeriesTheta;
+   private SignalDoubleModel _plotSeriesAlpha;
+   private SignalDoubleModel _plotSeriesBeta;
 
    private ZoomVal _zoomVal;
 
-   public SignalHolder(XYPlot plotSignal) {
+   public RhythmHolder(XYPlot plotSignal) {
       if (plotSignal == null)
          throw new NullPointerException("plotSignal can not be null");
       _plotSignal = plotSignal;
@@ -37,18 +38,39 @@ public class SignalHolder {
       stopRender();
       float wndSizeSek = windowDurationSek <= 0 ? 5.0f : windowDurationSek;
       int size = (int) Math.ceil(sampleRate * wndSizeSek);
-      _plotSeries = new SignalDoubleModel(size, sampleRate, zoomVal.isAuto(), zoomVal.getTop().doubleValue());
-      SignalFadeFormatter formatter = new SignalFadeFormatter(size);
-      formatter.setLegendIconEnabled(false);
-      _plotSignal.addSeries(_plotSeries, formatter);
+      _plotSeriesTheta = new SignalDoubleModel(size, sampleRate, zoomVal.isAuto(), zoomVal.getTop().doubleValue());
+      _plotSeriesAlpha = new SignalDoubleModel(size, sampleRate, zoomVal.isAuto(), zoomVal.getTop().doubleValue());
+      _plotSeriesBeta = new SignalDoubleModel(size, sampleRate, zoomVal.isAuto(), zoomVal.getTop().doubleValue());
+
+      SignalFadeFormatter formatter1 = new SignalFadeFormatter(size);
+      formatter1.setLegendIconEnabled(false);
+      formatter1.getLinePaint().setColor(0x669900);
+      _plotSignal.addSeries(_plotSeriesTheta, formatter1);
+
+      SignalFadeFormatter formatter2 = new SignalFadeFormatter(size);
+      formatter2.setLegendIconEnabled(false);
+      formatter2.getLinePaint().setColor(0xFF4444);
+      _plotSignal.addSeries(_plotSeriesAlpha, formatter2);
+
+      SignalFadeFormatter formatter3 = new SignalFadeFormatter(size);
+      formatter3.setLegendIconEnabled(false);
+      formatter3.getLinePaint().setColor(0x0099CC);
+      _plotSignal.addSeries(_plotSeriesBeta, formatter3);
+
       setZoomY(zoomVal);
       _plotSignal.setDomainBoundaries(0, wndSizeSek, BoundaryMode.FIXED);
-      _plotSeries.setRenderRef(new WeakReference<>(_plotSignal.getRenderer(AdvancedLineAndPointRenderer.class)));
+      _plotSeriesTheta.setRenderRef(new WeakReference<>(_plotSignal.getRenderer(AdvancedLineAndPointRenderer.class)));
+      _plotSeriesAlpha.setRenderRef(new WeakReference<>(_plotSignal.getRenderer(AdvancedLineAndPointRenderer.class)));
+      _plotSeriesBeta.setRenderRef(new WeakReference<>(_plotSignal.getRenderer(AdvancedLineAndPointRenderer.class)));
+
       _plotSignal.setDomainStepValue(windowDurationSek + 1);
+      _plotSignal.setRangeStepValue(6);
    }
 
-   public void addData(double[] data) {
-      _plotSeries.addData(data);
+   public void addData(double[] theta, double[] alpha, double[] beta) {
+      _plotSeriesTheta.addData(theta);
+      _plotSeriesAlpha.addData(alpha);
+      _plotSeriesBeta.addData(beta);
    }
 
    public void setZoomY(ZoomVal zoomVal) {
@@ -57,19 +79,33 @@ public class SignalHolder {
       if (_zoomVal != zoomVal) {
          _zoomVal = zoomVal;
          if (zoomVal.ordinal() <= PlotHolder.ZoomVal.V_AUTO_1.ordinal()) {
-            _plotSeries.setAutoRange(false);
+            _plotSeriesTheta.setAutoRange(false);
+            _plotSeriesAlpha.setAutoRange(false);
+            _plotSeriesBeta.setAutoRange(false);
             _plotSignal.setRangeBoundaries(zoomVal.getBottom(), zoomVal.getTop(), zoomVal.isAuto() ? BoundaryMode.AUTO : BoundaryMode.FIXED);
          } else {
-            _plotSeries.setAutoRangeScale(zoomVal.getTop().doubleValue());
-            _plotSeries.setAutoRange(true);
+            _plotSeriesTheta.setAutoRangeScale(zoomVal.getTop().doubleValue());
+            _plotSeriesAlpha.setAutoRangeScale(zoomVal.getTop().doubleValue());
+            _plotSeriesBeta.setAutoRangeScale(zoomVal.getTop().doubleValue());
+            _plotSeriesTheta.setAutoRange(true);
+            _plotSeriesAlpha.setAutoRange(true);
+            _plotSeriesBeta.setAutoRange(true);
          }
       }
    }
 
    public void stopRender() {
-      if (_plotSeries != null) {
-         _plotSignal.removeSeries(_plotSeries);
-         _plotSeries = null;
+      if (_plotSeriesTheta != null) {
+         _plotSignal.removeSeries(_plotSeriesTheta);
+         _plotSeriesTheta = null;
+      }
+      if (_plotSeriesAlpha != null) {
+         _plotSignal.removeSeries(_plotSeriesAlpha);
+         _plotSeriesAlpha = null;
+      }
+      if (_plotSeriesBeta != null) {
+         _plotSignal.removeSeries(_plotSeriesBeta);
+         _plotSeriesBeta = null;
       }
    }
 
@@ -179,6 +215,7 @@ public class SignalHolder {
 
       SignalFadeFormatter(int trailSize) {
          this._trailSize = trailSize;
+//         this.setLegendIconEnabled(false);
       }
 
       @Override
@@ -192,6 +229,7 @@ public class SignalHolder {
 
          float scale = 255f / _trailSize;
          int alpha = (int) (255 - (offset * scale));
+//         getLinePaint().setColor(Color.GREEN);
          getLinePaint().setAlpha(Math.max(alpha, 0));
          return getLinePaint();
       }
@@ -201,6 +239,7 @@ public class SignalHolder {
       V_3(3, -3),
       V_2(2, -2),
       V_1(1, -1),
+      V_1_0(1, 0),
       V_05(0.5, -0.5),
       V_02(0.2, -0.2),
       V_01(0.1, -0.1),
@@ -225,6 +264,7 @@ public class SignalHolder {
       V_AUTO_M_S7(7, -1, false),
       V_AUTO_M_S10(10, -1, false),
       ;
+
 
       private ZoomVal(Number top, Number bottom, boolean auto) {
          _top = top;

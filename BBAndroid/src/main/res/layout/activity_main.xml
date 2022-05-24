@@ -63,20 +63,111 @@
             android:layout_height="0dp"
             android:layout_weight="1">
 
-            <include layout="@layout/fragment_plot_qsignal" />
+            <include layout="@layout/fragment_plot_qsignal4" />
+<!--            <include layout="@layout/fragment_plot_qsignal2" />-->
 
         </FrameLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="10dp">
+            android:paddingTop="4dp">
+
+            <TextView
+                android:id="@+id/txt_O1T3_theta_value"
+                android:layout_width="wrap_content"
+                android:layout_height="19dp"
+                android:layout_margin="4dp"
+                app:layout_constraintBottom_toTopOf="@+id/txt_alpha_title"
+                app:layout_constraintStart_toEndOf="@+id/txt_theta_title" />
+
+            <TextView
+                android:id="@+id/txt_theta_title"
+                android:layout_width="40dp"
+                android:layout_height="19dp"
+                android:layout_margin="4dp"
+                android:text="@string/theta_rhythm_title"
+                android:textColor="@android:color/holo_green_dark"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@+id/txt_alpha_title"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <TextView
+                android:id="@+id/txt_alpha_title"
+                android:layout_width="40dp"
+                android:layout_height="19dp"
+                android:layout_margin="4dp"
+                android:text="@string/alpha_rhythm_title"
+                android:textColor="@android:color/holo_red_light"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@+id/txt_beta_title"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <TextView
+                android:id="@+id/txt_beta_title"
+                android:layout_width="40dp"
+                android:layout_height="19dp"
+                android:layout_margin="4dp"
+                android:text="@string/beta_rhythm_title"
+                android:textColor="@android:color/holo_blue_dark"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <TextView
+                android:id="@+id/txt_O1T3_alpha_value"
+                android:layout_width="wrap_content"
+                android:layout_height="19dp"
+                android:layout_margin="4dp"
+                app:layout_constraintBottom_toTopOf="@+id/txt_beta_title"
+                app:layout_constraintStart_toEndOf="@+id/txt_alpha_title" />
+
+            <TextView
+                android:id="@+id/txt_O1T3_beta_value"
+                android:layout_width="wrap_content"
+                android:layout_height="19dp"
+                android:layout_margin="4dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/txt_beta_title" />
+
+            <TextView
+                android:id="@+id/txt_O2T4_theta_value"
+                android:layout_width="wrap_content"
+                android:layout_height="19dp"
+                android:layout_marginStart="150dp"
+                android:layout_marginBottom="4dp"
+                app:layout_constraintBottom_toTopOf="@+id/txt_O2T4_alpha_value"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <TextView
+                android:id="@+id/txt_O2T4_alpha_value"
+                android:layout_width="wrap_content"
+                android:layout_height="19dp"
+                android:layout_marginStart="150dp"
+                android:layout_marginBottom="4dp"
+                app:layout_constraintBottom_toTopOf="@+id/txt_O2T4_beta_value"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <TextView
+                android:id="@+id/txt_O2T4_beta_value"
+                android:layout_width="wrap_content"
+                android:layout_height="19dp"
+                android:layout_marginStart="150dp"
+                android:layout_marginBottom="4dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="4dp">
 
             <TextView
                 android:id="@+id/txt_t3_title"
                 android:layout_width="40dp"
                 android:layout_height="19dp"
-                android:layout_margin="8dp"
+                android:layout_margin="4dp"
                 android:text="@string/el_resistance_t3_title"
                 app:layout_constraintBottom_toTopOf="@+id/txt_o1_title"
                 app:layout_constraintStart_toStartOf="parent" />
@@ -84,8 +175,8 @@
             <TextView
                 android:id="@+id/txt_t3_value"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
+                android:layout_height="19dp"
+                android:layout_margin="4dp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toTopOf="@+id/txt_o1_title"
                 app:layout_constraintStart_toEndOf="@+id/txt_t3_title" />
@@ -93,9 +184,9 @@
             <TextView
                 android:id="@+id/txt_t4_title"
                 android:layout_width="40dp"
-                android:layout_height="wrap_content"
+                android:layout_height="19dp"
                 android:layout_marginStart="200dp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="4dp"
                 android:text="@string/el_resistance_t4_title"
                 app:layout_constraintBottom_toTopOf="@+id/txt_o2_title"
                 app:layout_constraintStart_toStartOf="parent" />
@@ -103,8 +194,8 @@
             <TextView
                 android:id="@+id/txt_t4_value"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
+                android:layout_height="19dp"
+                android:layout_margin="4dp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toTopOf="@+id/txt_o2_title"
                 app:layout_constraintStart_toEndOf="@+id/txt_t4_title" />
@@ -113,7 +204,7 @@
                 android:id="@+id/txt_o1_title"
                 android:layout_width="40dp"
                 android:layout_height="19dp"
-                android:layout_margin="8dp"
+                android:layout_margin="4dp"
                 android:text="@string/el_resistance_o1_title"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
@@ -122,7 +213,7 @@
                 android:id="@+id/txt_o1_value"
                 android:layout_width="wrap_content"
                 android:layout_height="19dp"
-                android:layout_margin="8dp"
+                android:layout_margin="4dp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/txt_o1_title" />
@@ -130,9 +221,9 @@
             <TextView
                 android:id="@+id/txt_o2_title"
                 android:layout_width="40dp"
-                android:layout_height="wrap_content"
+                android:layout_height="19dp"
                 android:layout_marginStart="200dp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="4dp"
                 android:text="@string/el_resistance_o2_title"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
@@ -140,8 +231,8 @@
             <TextView
                 android:id="@+id/txt_o2_value"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
+                android:layout_height="19dp"
+                android:layout_margin="4dp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/txt_o2_title" />

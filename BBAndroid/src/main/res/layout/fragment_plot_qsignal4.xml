@@ -101,7 +101,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="T3"
+        android:text="O1 - T3 rhythms"
         app:layout_constraintStart_toStartOf="@id/plot_signal_3"
         app:layout_constraintTop_toTopOf="@id/plot_signal_3"
         tools:ignore="HardcodedText" />
@@ -109,7 +109,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="T4"
+        android:text="O2 - T4 rhythms"
         app:layout_constraintStart_toStartOf="@id/plot_signal_4"
         app:layout_constraintTop_toTopOf="@id/plot_signal_4"
         tools:ignore="HardcodedText" />
