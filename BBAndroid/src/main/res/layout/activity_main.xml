@@ -64,7 +64,7 @@
             android:layout_weight="1">
 
             <include layout="@layout/fragment_plot_qsignal4" />
-<!--            <include layout="@layout/fragment_plot_qsignal2" />-->
+            <!--            <include layout="@layout/fragment_plot_qsignal2" />-->
 
         </FrameLayout>
 
@@ -159,9 +159,11 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_resistance"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="4dp">
+            android:paddingTop="4dp"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/txt_t3_title"

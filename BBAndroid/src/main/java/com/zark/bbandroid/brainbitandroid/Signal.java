@@ -51,6 +51,7 @@ final class Signal {
    private int _lastIndex;
    private int _lastFilteredIndex;
    private int _sampleRate;
+   private int _last10Index;
    private int _nfft;
 
    public static Signal inst() {
@@ -81,6 +82,9 @@ final class Signal {
 
    public void signalStart() {
       stopProcess();
+      _lastIndex = -1;
+      _lastFilteredIndex = -1;
+      _last10Index = 0;
       try {
          Device device = DevHolder.inst().device();
          if (device != null) {
@@ -88,26 +92,21 @@ final class Signal {
             _sampleRate = (int) _channel.samplingFrequency();
             _nfft = DataFilter.get_nearest_power_of_two(_sampleRate);
             configureDevice(device);
-            plotO1_T3.startRender(SignalHolder.ZoomVal.V_000005, 5.0f, _channel.samplingFrequency());
-            plotO2_T4.startRender(SignalHolder.ZoomVal.V_000005, 5.0f, _channel.samplingFrequency());
+            plotO1_T3.startRender(SignalHolder.ZoomVal.V_00001, 5.0f, _channel.samplingFrequency());
+            plotO2_T4.startRender(SignalHolder.ZoomVal.V_00001, 5.0f, _channel.samplingFrequency());
             plotRhythmO1_T3.startRender(RhythmHolder.ZoomVal.V_1_0, 5.0f, _channel.samplingFrequency());
             plotRhythmO2_T4.startRender(RhythmHolder.ZoomVal.V_1_0, 5.0f, _channel.samplingFrequency());
 
-            Executors.newSingleThreadExecutor().submit(new Runnable() {
+            _notificationCallback = new INotificationCallback<Integer>() {
                int _offsetData;
+
                @Override
-               public void run() {
-                  try {
-                     while (!Thread.currentThread().isInterrupted()) {
-                        Thread.sleep(40);
-                        _offsetData += signalDataReceived(_channel, _offsetData);
-                        if (_lastFilteredIndex >= 1010) updRhythms();
-                     }
-                  } catch (Exception ex) {
-                     Log.d(TAG, ex.toString());
-                  }
+               public void onNotify(Object sender, Integer nParam) {
+                  _offsetData += signalDataReceived(_channel, _offsetData);
                }
-            });
+            };
+
+            _channel.dataLengthChanged.subscribe(_notificationCallback);
          }
       } catch (Exception ex) {
          Log.d(TAG, "Failed start signal", ex);
@@ -161,6 +160,12 @@ final class Signal {
       }
    }
 
+   private void updateViewValue(TextView txtValue, double rhythmVal) {
+      if (txtValue != null) {
+         txtValue.setText(_activity.getString(R.string.el_rhythm_value, rhythmVal * 100));
+      }
+   }
+
    private int signalDataReceived(BrainbitSyncChannel channel, int offset) {
       int length = channel.totalLength() - offset;
       if (length > 0) {
@@ -170,36 +175,33 @@ final class Signal {
             _dataO1_T3[_lastIndex] = data[i].O1 - data[i].T3;
             _dataO2_T4[_lastIndex] = data[i].O2 - data[i].T4;
          }
+         filteredPrepare(length);
 
-         int startIndex = Math.max(_lastIndex - 1000 - length + 1, 0);
-         double[] dataFiltered = Arrays.copyOfRange(_dataO1_T3, startIndex, _lastIndex + 1);
-         signalFiltering(dataFiltered);
-         dataFiltered = Arrays.copyOfRange(dataFiltered, Math.max(_lastIndex + 1 - startIndex - length, 0), _lastIndex + 1 - startIndex);
-         plotO1_T3.addData(dataFiltered);
-         for (int i = 0; i < length; i++) {
-            _lastFilteredIndex += 1;
-            _dataFilteredO1_T3[_lastFilteredIndex] = dataFiltered[i];
-         }
-
-         Log.d(TAG, "");
-         Log.d(TAG, Arrays.toString(dataFiltered));
-         Log.d(TAG, Arrays.toString(Arrays.copyOfRange(_dataFilteredO1_T3, _lastFilteredIndex + 1 - length, _lastFilteredIndex + 1)));
-
-         dataFiltered = Arrays.copyOfRange(_dataO2_T4, startIndex, _lastIndex + 1);
-         signalFiltering(dataFiltered);
-         dataFiltered = Arrays.copyOfRange(dataFiltered, Math.max(_lastIndex + 1 - startIndex - length, 0), _lastIndex + 1 - startIndex);
-         plotO2_T4.addData(dataFiltered);
-         for (int i = 0; i < length; i++) {
-            _lastFilteredIndex += 1;
-            _dataFilteredO2_T4[_lastFilteredIndex] = dataFiltered[i];
+//         Log.d(TAG, _lastIndex + " - " + _lastFilteredIndex);
+         int index = (int) (Math.ceil(_lastFilteredIndex / 10) * 10);
+         if (index > _last10Index) {
+            _last10Index = index;
+//            Log.d(TAG, "" + _last10Index);
+            if (_lastFilteredIndex > 1000) updRhythms();
          }
       }
       return length;
    }
 
-   private void updateViewValue(TextView txtValue, double rhythmVal) {
-      if (txtValue != null) {
-         txtValue.setText(_activity.getString(R.string.el_rhythm_value, rhythmVal * 100));
+   private void filteredPrepare(int length) {
+      int startIndex = Math.max(_lastIndex - 1000 - length + 1, 0);
+      double[] dataFilteredO1_T3 = Arrays.copyOfRange(_dataO1_T3, startIndex, _lastIndex + 1);
+      double[] dataFilteredO2_T4 = Arrays.copyOfRange(_dataO2_T4, startIndex, _lastIndex + 1);
+      signalFiltering(dataFilteredO1_T3);
+      signalFiltering(dataFilteredO2_T4);
+      dataFilteredO1_T3 = Arrays.copyOfRange(dataFilteredO1_T3, Math.max(_lastIndex + 1 - startIndex - length, 0), _lastIndex + 1 - startIndex);
+      dataFilteredO2_T4 = Arrays.copyOfRange(dataFilteredO2_T4, Math.max(_lastIndex + 1 - startIndex - length, 0), _lastIndex + 1 - startIndex);
+      plotO1_T3.addData(dataFilteredO1_T3);
+      plotO2_T4.addData(dataFilteredO2_T4);
+      for (int i = 0; i < length; i++) {
+         _lastFilteredIndex += 1;
+         _dataFilteredO1_T3[_lastFilteredIndex] = dataFilteredO1_T3[i];
+         _dataFilteredO2_T4[_lastFilteredIndex] = dataFilteredO2_T4[i];
       }
    }
 
@@ -224,7 +226,6 @@ final class Signal {
          _channel = null;
          _notificationCallback = null;
       }
-
       if (plotO1_T3 != null) {
          plotO1_T3.stopRender();
       }

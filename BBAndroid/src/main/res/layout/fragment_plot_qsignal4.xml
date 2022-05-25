@@ -85,7 +85,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="O1"
+        android:text="O1 - T3"
         app:layout_constraintStart_toStartOf="@id/plot_signal_1"
         app:layout_constraintTop_toTopOf="@id/plot_signal_1"
         tools:ignore="HardcodedText" />
@@ -93,7 +93,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="O2"
+        android:text="O2 - T4"
         app:layout_constraintStart_toStartOf="@id/plot_signal_2"
         app:layout_constraintTop_toTopOf="@id/plot_signal_2"
         tools:ignore="HardcodedText" />

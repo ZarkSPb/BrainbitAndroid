@@ -227,6 +227,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    }
 
    private void startResistance() {
+      findViewById(R.id.cl_resistance).setVisibility(View.VISIBLE);
       Resistance.inst().init(this);
       Resistance.inst().resistanceStart();
       _resistance = true;
@@ -234,6 +235,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
    private void stopResistance() {
       Resistance.inst().stopProcess();
+      findViewById(R.id.cl_resistance).setVisibility(View.GONE);
       _resistance = false;
    }
 
