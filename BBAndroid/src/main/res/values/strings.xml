@@ -24,5 +24,10 @@
     <string name="el_resistance_value">%1$.1f kOm</string>
     <string name="el_resistance_infinity_value">ꝏ kOm</string>
 
+    <string name="alpha_rhythm_title">alpha:</string>
+    <string name="beta_rhythm_title">beta:</string>
+    <string name="theta_rhythm_title">theta:</string>
+    <string name="el_rhythm_value">%1$.1f %%</string>
+
     <string name="resistance_demo_mode_title">Resistance</string>
 </resources>
