@@ -7,6 +7,7 @@ import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
@@ -30,6 +31,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+   static {
+      System.loadLibrary("wavemaker");
+   }
 
    private final String TAG = "[MainActivity]";
    private final String DEV_NAME_KEY = "name";
@@ -56,6 +61,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       super.onCreate(savedInstanceState);
       setContentView(R.layout.activity_main);
       init();
+   }
+
+   @Override
+   protected void onDestroy() {
+      stopEngine();
+      super.onDestroy();
+   }
+
+   @Override
+   public boolean onTouchEvent(MotionEvent event) {
+      touchEvent(event.getAction());
+      return super.onTouchEvent(event);
    }
 
    private void init() {
@@ -99,6 +116,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             updateDevicesListView();
          }
       });
+
+      startEngine();
    }
 
    private void updateContent(Boolean connectionState) {
@@ -252,5 +271,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       Signal.inst().stopProcess();
       _signal = false;
    }
+
+   // native methods
+   private native void touchEvent(int action);
+   private native void startEngine();
+   private native void stopEngine();
 
 }
