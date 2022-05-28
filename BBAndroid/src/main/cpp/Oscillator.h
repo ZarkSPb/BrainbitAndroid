@@ -4,6 +4,7 @@
 
 #ifndef WAVEMAKER_OSCILLATOR_H
 #define WAVEMAKER_OSCILLATOR_H
+#define FREQUENCYNUMBER 3
 
 #include <atomic>
 #include <stdint.h>
@@ -17,9 +18,11 @@ public:
 
 private:
     std::atomic<float> amplitude_{0.0};
-    std::atomic<bool> isWaveOn_{false};
-    double phase_ = 0.0;
-    double phaseIncrement_ = 0.0;
+    float amplitudeRender[FREQUENCYNUMBER] = {0.0, 0.0, 0.0};
+    std::atomic<bool> isWaveOn_{true};
+    double phase_[FREQUENCYNUMBER] = {0.0, 0.0, 0.0};
+    double phaseIncrement_[FREQUENCYNUMBER] = {0.0, 0.0, 0.0};
+    double frequencys_[FREQUENCYNUMBER] = {466.3, 932.33, 1864.66};
 };
 
 

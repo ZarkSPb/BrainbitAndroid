@@ -56,7 +56,7 @@ bool AudioEngine::start() {
     AAudioStream_setBufferSizeInFrames(
             stream_, AAudioStream_getFramesPerBurst(stream_) * kBufferSizeInBursts);
 
-    __android_log_print(ANDROID_LOG_DEBUG, "AudioEngine", "%d - %d",(AAudioStream_getFramesPerBurst(stream_)), sampleRate);
+//    __android_log_print(ANDROID_LOG_DEBUG, "AudioEngine", "%d - %d",(AAudioStream_getFramesPerBurst(stream_)), sampleRate);
 
     // Starts the stream.
     result = AAudioStream_requestStart(stream_);
