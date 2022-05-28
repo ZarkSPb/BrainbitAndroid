@@ -13,7 +13,6 @@ import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
 import com.zark.bbandroid.utils.MinMaxArrayHelper;
-import com.zark.bbandroid.utils.PlotHolder;
 
 import java.lang.ref.WeakReference;
 
@@ -56,7 +55,7 @@ public class SignalHolder {
          return;
       if (_zoomVal != zoomVal) {
          _zoomVal = zoomVal;
-         if (zoomVal.ordinal() <= PlotHolder.ZoomVal.V_AUTO_1.ordinal()) {
+         if (zoomVal.ordinal() <= ZoomVal.V_AUTO_1.ordinal()) {
             _plotSeries.setAutoRange(false);
             _plotSignal.setRangeBoundaries(zoomVal.getBottom(), zoomVal.getTop(), zoomVal.isAuto() ? BoundaryMode.AUTO : BoundaryMode.FIXED);
          } else {

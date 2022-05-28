@@ -13,7 +13,6 @@ import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
 import com.zark.bbandroid.utils.MinMaxArrayHelper;
-import com.zark.bbandroid.utils.PlotHolder;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicReference;
@@ -78,7 +77,7 @@ public class RhythmHolder {
          return;
       if (_zoomVal != zoomVal) {
          _zoomVal = zoomVal;
-         if (zoomVal.ordinal() <= PlotHolder.ZoomVal.V_AUTO_1.ordinal()) {
+         if (zoomVal.ordinal() <= ZoomVal.V_AUTO_1.ordinal()) {
             _plotSeriesTheta.setAutoRange(false);
             _plotSeriesAlpha.setAutoRange(false);
             _plotSeriesBeta.setAutoRange(false);
