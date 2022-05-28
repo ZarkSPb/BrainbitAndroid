@@ -122,6 +122,8 @@ final class Signal {
          double alpha1 = bandPowerAlpha / (bandPowerTheta + bandPowerAlpha + bandPowerBeta);
          double beta1 = bandPowerBeta / (bandPowerTheta + bandPowerAlpha + bandPowerBeta);
 
+         //theta1, alpha1, beta1 - digits for buffers for translate to cpp code
+
          plotRhythmO1_T3.addData(new double[]{theta1}, new double[]{alpha1}, new double[]{beta1});
 
          _activity.runOnUiThread(new Runnable() {
@@ -141,6 +143,8 @@ final class Signal {
          double theta2 = bandPowerTheta / (bandPowerTheta + bandPowerAlpha + bandPowerBeta);
          double alpha2 = bandPowerAlpha / (bandPowerTheta + bandPowerAlpha + bandPowerBeta);
          double beta2 = bandPowerBeta / (bandPowerTheta + bandPowerAlpha + bandPowerBeta);
+
+         //theta2, alpha2, beta2 - digits for buffers for translate to cpp code
 
          plotRhythmO2_T4.addData(new double[]{theta2}, new double[]{alpha2}, new double[]{beta2});
 
@@ -173,13 +177,13 @@ final class Signal {
             _dataO2_T4[_lastIndex] = data[i].O2 - data[i].T4;
          }
 
-         filteredPrepare(length); // оптимизировать, переместив этот вызов в условие ниже, но это не точно
+         filteredPrepare(length); // filtered for rendering
 
-         Log.d(TAG, "" + _lastIndex);
+//         Log.d(TAG, "" + _lastIndex);
          while (_lastIndex - 4 > _last5Index) {
             _last5Index += 5;
             if (_lastIndex > 1000) updRhythms();
-            Log.d(TAG, _lastIndex + " - " + _last5Index);
+//            Log.d(TAG, _lastIndex + " - " + _last5Index);
          }
       }
       return length;

@@ -99,45 +99,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             updateDevicesListView();
          }
       });
-
-//      int sr = 48000;
-//      int buffSize = AudioTrack.getMinBufferSize(sr, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
-//      buffSize = sr * 5;
-//      Log.d(TAG, "" + buffSize);
-//      //create the AudioTrack object
-//      AudioTrack audio = new AudioTrack(AudioManager.STREAM_MUSIC, sr, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, buffSize, AudioTrack.MODE_STREAM);
-//      AudioTrack audio2 = new AudioTrack(AudioManager.STREAM_MUSIC, sr, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, buffSize, AudioTrack.MODE_STREAM);
-//
-//      //initialise values for synthesis
-//      short[] samples = new short[buffSize];   //array the same size as buffer
-//      short[] samples2 = new short[buffSize];   //array the same size as buffer
-//      int amp = 5000;                          //amplitude of the waveform 10000 - is unique value
-//      double twopi = 8. * Math.tan(1.);         //2*pi
-//      double fr;                        //the frequency to create
-//      double fr2;                        //the frequency to create
-//      double ph = 0;                          //phase shift
-//      double ph2 = 0;                          //phase shift
-//      //start audio
-//      audio.play();
-////      audio2.play();
-//      //synthesis loop
-//      for (int j = 0; j <= 5; j++) {
-////         fr = 440 + 10 * j;
-//         for (int i = 0; i < buffSize; i++) {
-//            fr = 440 + (i / 200);
-//            fr2 = 1480 - (i / 200);
-//            samples[i] = (short) (amp * (Math.sin(ph) + Math.sin(ph2)));
-////            samples2[i] = (short) (amp * Math.sin(ph * 2));
-//            ph += twopi * fr / sr;
-//            ph2 += twopi * fr2 / sr;
-//         }
-//         audio.write(samples, 0, buffSize);
-////         audio2.write(samples2, 0, buffSize);
-//      }
-//      //stop the audio track
-//      audio.pause();
-//      audio.flush();
-//      audio.release();
    }
 
    private void updateContent(Boolean connectionState) {
