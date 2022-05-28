@@ -1,6 +1,5 @@
 package com.zark.bbandroid.brainbitandroid;
 
-import android.nfc.Tag;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -19,8 +18,6 @@ import com.zark.bbandroid.utils.CommonHelper;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Arrays;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import brainflow.BrainFlowError;
 import brainflow.DataFilter;
@@ -51,7 +48,7 @@ final class Signal {
    private int _lastIndex;
    private int _lastFilteredIndex;
    private int _sampleRate;
-   private int _last10Index;
+   private int _last5Index;
    private int _nfft;
 
    public static Signal inst() {
@@ -84,7 +81,7 @@ final class Signal {
       stopProcess();
       _lastIndex = -1;
       _lastFilteredIndex = -1;
-      _last10Index = 0;
+      _last5Index = 0;
       try {
          Device device = DevHolder.inst().device();
          if (device != null) {
@@ -116,7 +113,7 @@ final class Signal {
 
    private void updRhythms() {
       try {
-         double[] dataFiltered = Arrays.copyOfRange(_dataFilteredO1_T3, _lastFilteredIndex + 1 - 1000, _lastFilteredIndex + 1);
+         double[] dataFiltered = Arrays.copyOfRange(_dataFilteredO1_T3, _last5Index + 1 - 1000, _last5Index + 1);
          Pair<double[], double[]> psd = DataFilter.get_psd_welch(dataFiltered, _nfft, _nfft / 2, _sampleRate, WindowFunctions.HANNING.get_code());
          double bandPowerTheta = DataFilter.get_band_power(psd, 4.0, 8.0);
          double bandPowerAlpha = DataFilter.get_band_power(psd, 8.0, 13.0);
@@ -136,7 +133,7 @@ final class Signal {
             }
          });
 
-         dataFiltered = Arrays.copyOfRange(_dataFilteredO2_T4, _lastFilteredIndex + 1 - 1000, _lastFilteredIndex + 1);
+         dataFiltered = Arrays.copyOfRange(_dataFilteredO2_T4, _last5Index + 1 - 1000, _last5Index + 1);
          psd = DataFilter.get_psd_welch(dataFiltered, _nfft, _nfft / 2, _sampleRate, WindowFunctions.HANNING.get_code());
          bandPowerTheta = DataFilter.get_band_power(psd, 4.0, 8.0);
          bandPowerAlpha = DataFilter.get_band_power(psd, 8.0, 13.0);
@@ -175,14 +172,14 @@ final class Signal {
             _dataO1_T3[_lastIndex] = data[i].O1 - data[i].T3;
             _dataO2_T4[_lastIndex] = data[i].O2 - data[i].T4;
          }
-         filteredPrepare(length);
 
-//         Log.d(TAG, _lastIndex + " - " + _lastFilteredIndex);
-         int index = (int) (Math.ceil(_lastFilteredIndex / 10) * 10);
-         if (index > _last10Index) {
-            _last10Index = index;
-//            Log.d(TAG, "" + _last10Index);
-            if (_lastFilteredIndex > 1000) updRhythms();
+         filteredPrepare(length); // оптимизировать, переместив этот вызов в условие ниже, но это не точно
+
+         Log.d(TAG, "" + _lastIndex);
+         while (_lastIndex - 4 > _last5Index) {
+            _last5Index += 5;
+            if (_lastIndex > 1000) updRhythms();
+            Log.d(TAG, _lastIndex + " - " + _last5Index);
          }
       }
       return length;
