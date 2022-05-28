@@ -72,6 +72,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    @Override
    public boolean onTouchEvent(MotionEvent event) {
       touchEvent(event.getAction());
+//      if (event.getAction() == event.ACTION_DOWN) setAmplitude(0.5f);
+//      if (event.getAction() == event.ACTION_UP) setAmplitude(0.2f);
+//      setAmplitude(0.5f);
       return super.onTouchEvent(event);
    }
 
@@ -276,5 +279,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
    private native void touchEvent(int action);
    private native void startEngine();
    private native void stopEngine();
-
 }

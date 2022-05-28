@@ -26,6 +26,11 @@ import brainflow.FilterTypes;
 import brainflow.WindowFunctions;
 
 final class Signal {
+
+   static {
+      System.loadLibrary("wavemaker");
+   }
+
    private final static String TAG = "[SignalJAVA]";
    private final static Object _mutex = new Object();
    private static volatile Signal _inst;
@@ -121,6 +126,8 @@ final class Signal {
          double theta1 = bandPowerTheta / (bandPowerTheta + bandPowerAlpha + bandPowerBeta);
          double alpha1 = bandPowerAlpha / (bandPowerTheta + bandPowerAlpha + bandPowerBeta);
          double beta1 = bandPowerBeta / (bandPowerTheta + bandPowerAlpha + bandPowerBeta);
+
+         setAmplitude((float) alpha1);
 
          //theta1, alpha1, beta1 - digits for buffers for translate to cpp code
 
@@ -252,4 +259,6 @@ final class Signal {
          CommonHelper.showMessage(_activity, R.string.err_stop_signal);
       }
    }
+
+   private native void setAmplitude(float amplitude);
 }
