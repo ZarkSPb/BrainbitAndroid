@@ -22,7 +22,7 @@ private:
     std::atomic<bool> isWaveOn_{true};
     double phase_[FREQUENCYNUMBER] = {0.0, 0.0, 0.0};
     double phaseIncrement_[FREQUENCYNUMBER] = {0.0, 0.0, 0.0};
-    double frequencys_[FREQUENCYNUMBER] = {466.3, 932.33, 1864.66};
+    double frequencys_[FREQUENCYNUMBER] = {369.99, 739.99, 1479.98};
 };
 
 

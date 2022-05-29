@@ -8,12 +8,10 @@
 
 #define TWO_PI (3.14159 * 2)
 
-
 void Oscillator::setSampleRate(int32_t sampleRate) {
     double coefficient = TWO_PI / (double) sampleRate;
     for (int i = 0; i < FREQUENCYNUMBER; i++)
         phaseIncrement_[i] = coefficient * (double) frequencys_[i];
-
 }
 
 void Oscillator::setWaveOn(bool isWaveOn) {
@@ -48,19 +46,6 @@ void Oscillator::render(float *audioData, int32_t numFrames) {
                         amplitudeRender[freqN] += (amplitude_.load() - amplitudeRender[freqN]) / 4.0f;
                 }
             }
-
-
-//            if (phase_1 > TWO_PI) {
-//                __android_log_print(ANDROID_LOG_DEBUG, "Oscillator", "%f", phase_);
-//                phase_1 -= TWO_PI;
-//                if (amplitudeRender[0] != amplitude_.load())
-//                    amplitudeRender[0] += (amplitude_.load() - amplitudeRender[0]) / 4.0f;
-//            }
-//            if (phase_2 > TWO_PI) {
-//                phase_2 -= TWO_PI;
-//                if (amplitudeRender[1] != amplitude_.load())
-//                    amplitudeRender[1] += (amplitude_.load() - amplitudeRender[1]) / 4.0f;
-//            }
 
         } else {
             // Outputs silence by setting sample value to zero.
