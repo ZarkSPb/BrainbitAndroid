@@ -60,9 +60,7 @@ final class Signal {
       Signal instRef = _inst;
       if (instRef == null) {
          synchronized (_mutex) {
-            if (instRef == null) {
-               _inst = instRef = new Signal();
-            }
+            _inst = instRef = new Signal();
          }
       }
       return instRef;
@@ -127,9 +125,7 @@ final class Signal {
          double alpha1 = bandPowerAlpha / (bandPowerTheta + bandPowerAlpha + bandPowerBeta);
          double beta1 = bandPowerBeta / (bandPowerTheta + bandPowerAlpha + bandPowerBeta);
 
-         setAmplitude((float) alpha1);
-
-         //theta1, alpha1, beta1 - digits for buffers for translate to cpp code
+         setAmplitudes((float) theta1, (float) alpha1, (float) beta1); // send new amplitudes
 
          plotRhythmO1_T3.addData(new double[]{theta1}, new double[]{alpha1}, new double[]{beta1});
 
@@ -151,7 +147,8 @@ final class Signal {
          double alpha2 = bandPowerAlpha / (bandPowerTheta + bandPowerAlpha + bandPowerBeta);
          double beta2 = bandPowerBeta / (bandPowerTheta + bandPowerAlpha + bandPowerBeta);
 
-         //theta2, alpha2, beta2 - digits for buffers for translate to cpp code
+
+
 
          plotRhythmO2_T4.addData(new double[]{theta2}, new double[]{alpha2}, new double[]{beta2});
 
@@ -260,5 +257,5 @@ final class Signal {
       }
    }
 
-   private native void setAmplitude(float amplitude);
+   private native void setAmplitudes(float t1, float a2, float b1);
 }

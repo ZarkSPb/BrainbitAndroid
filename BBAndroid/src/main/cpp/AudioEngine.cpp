@@ -56,7 +56,7 @@ bool AudioEngine::start() {
     AAudioStream_setBufferSizeInFrames(
             stream_, AAudioStream_getFramesPerBurst(stream_) * kBufferSizeInBursts);
 
-//    __android_log_print(ANDROID_LOG_DEBUG, "AudioEngine", "%d - %d",(AAudioStream_getFramesPerBurst(stream_)), sampleRate);
+    __android_log_print(ANDROID_LOG_DEBUG, "AudioEngine", "%d - %d",(AAudioStream_getFramesPerBurst(stream_)), sampleRate);
 
     // Starts the stream.
     result = AAudioStream_requestStart(stream_);
@@ -87,8 +87,8 @@ void AudioEngine::stop() {
     }
 }
 
-void AudioEngine::setAmplitude(float amplitude) {
-    oscillator_.setAmplitude(amplitude);
+void AudioEngine::setAmplitudes(float t1, float  a1, float b1) {
+    oscillator_.setAmplitudes(t1, a1, b1);
 }
 
 void AudioEngine::setToneOn(bool isToneOn) {
