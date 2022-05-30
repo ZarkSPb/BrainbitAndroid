@@ -7,18 +7,10 @@ static AudioEngine *audioEngine = new AudioEngine();
 extern "C" {
 
 JNIEXPORT void JNICALL
-Java_com_zark_bbandroid_brainbitandroid_MainActivity_touchEvent(JNIEnv *env, jobject obj, jint action) {
-    switch (action) {
-        case AMOTION_EVENT_ACTION_DOWN:
-            audioEngine->setToneOn(true);
-            break;
-        case AMOTION_EVENT_ACTION_UP:
-//            audioEngine->setToneOn(false);
-            audioEngine->setToneOn(true);
-            break;
-        default:
-            break;
-    }
+Java_com_zark_bbandroid_brainbitandroid_MainActivity_setToneOn(JNIEnv *env, jobject obj,
+                                                               jboolean toneOn) {
+    audioEngine->setToneOn(toneOn);
+
 }
 
 JNIEXPORT void JNICALL
@@ -32,7 +24,8 @@ Java_com_zark_bbandroid_brainbitandroid_MainActivity_stopEngine(JNIEnv *env, job
 }
 
 JNIEXPORT void JNICALL
-Java_com_zark_bbandroid_brainbitandroid_Signal_setAmplitudes(JNIEnv *env, jobject obj, jfloat t1, jfloat a1, jfloat b1) {
+Java_com_zark_bbandroid_brainbitandroid_Signal_setAmplitudes(JNIEnv *env, jobject obj, jfloat t1,
+                                                             jfloat a1, jfloat b1) {
     audioEngine->setAmplitudes(t1, a1, b1);
 }
 

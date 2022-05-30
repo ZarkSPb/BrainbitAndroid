@@ -16,6 +16,15 @@ void Oscillator::setSampleRate(int32_t sampleRate) {
 
 void Oscillator::setWaveOn(bool isWaveOn) {
     isWaveOn_.store(isWaveOn);
+    if(!isWaveOn) {
+        t1_.store(0.0);
+        a1_.store(0.0);
+        b1_.store(0.0);
+        for (int i = 0; i < FREQUENCYNUMBER; i++) {
+            amplitudeRender[i] = 0.0;
+            phase_[i] = 0.0;
+        }
+    }
 }
 
 void Oscillator::setAmplitudes(float t1, float a1, float b1) {
@@ -25,9 +34,6 @@ void Oscillator::setAmplitudes(float t1, float a1, float b1) {
 }
 
 void Oscillator::render(float *audioData, int32_t numFrames) {
-
-//    if (!isWaveOn_.load()) phase_ = 0;
-
     for (int i = 0; i < numFrames; i++) {
         if (isWaveOn_.load()) {
             // Calculates the next sample value for the sine wave.
@@ -35,7 +41,7 @@ void Oscillator::render(float *audioData, int32_t numFrames) {
                                     (sin(phase_[1]) * amplitudeRender[1]) / 4.0f +
                                     (sin(phase_[2]) * amplitudeRender[2]) / 6.0f +
                                     (sin(phase_[3]) * amplitudeRender[3]) / 8.0f +
-//
+
                                     (sin(phase_[4]) * amplitudeRender[4]) +
                                     (sin(phase_[5]) * amplitudeRender[5]) / 4.0f +
                                     (sin(phase_[6]) * amplitudeRender[6]) / 6.0f +

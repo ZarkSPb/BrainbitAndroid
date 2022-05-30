@@ -69,15 +69,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       super.onDestroy();
    }
 
-   @Override
-   public boolean onTouchEvent(MotionEvent event) {
-      touchEvent(event.getAction());
-//      if (event.getAction() == event.ACTION_DOWN) setAmplitude(0.5f);
-//      if (event.getAction() == event.ACTION_UP) setAmplitude(0.2f);
-//      setAmplitude(0.5f);
-      return super.onTouchEvent(event);
-   }
-
    private void init() {
       tvDevState = findViewById(R.id.txt_dev_state);
       tvDevBatteryPower = findViewById(R.id.txt_dev_battery_power);
@@ -268,15 +259,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       Signal.inst().init(this);
       Signal.inst().signalStart();
       _signal = true;
+      setToneOn(_signal);
    }
 
    private void stopSignal() {
       Signal.inst().stopProcess();
       _signal = false;
+      setToneOn(_signal);
    }
 
    // native methods
-   private native void touchEvent(int action);
+   private native void setToneOn(boolean toneOn);
+
    private native void startEngine();
+
    private native void stopEngine();
 }
